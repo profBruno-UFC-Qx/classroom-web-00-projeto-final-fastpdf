@@ -1,69 +1,87 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/IDEzcQ6G)
-[![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=23547769)
-# :checkered_flag: NOME DO PROJETO
 
-Breve descrição do que o seu projeto faz.
+# Sistema de Geração de Carnês — FastPDF
 
-## :technologist: Membros da equipe
+Este projeto é uma solução prática para automatizar a gestão financeira de pequenas instituições de ensino, permitindo a geração de documentos de cobrança (PDF) em lote através da importação de dados via CSV.
 
-Matrícula, nome e curso dos participantes.
+## 🧑‍💻 Membros da equipe
 
-## :bulb: Objetivo Geral
-Descrever o objetivo de geral do projeto
+* **Matrícula:** [565857, 571602, 570351]
+* **Nome:** [Edivar Cruz Carvalho Filho, MARIA CLARA ZACARIAS MARQUES,  MARIA EDUARDA CARNEIRO DE FREITAS]
+* **Curso:** Engenharia de Software - UFC Quixadá
 
-## :eyes: Público-Alvo
-Público-alvo do projeto
+## 💡 Objetivo Geral
 
-## :star2: Impacto Esperado
-Descreva o impacto esperado do projeto em relação ao público alvo
+Desenvolver uma ferramenta de gestão financeira simplificada que automatize a criação, organização e acompanhamento de carnês escolares, eliminando processos manuais e facilitando o controle de inadimplência em escolas de pequeno porte.
 
-## :people_holding_hands: Papéis ou tipos de usuário da aplicação
+## 👀 Público-Alvo
 
-Informe aqui os tipos de usuário que irão interagir com a aplicação. Ex: administrador, locador, locatario, usuário não logado.
+Gestores de centros de reforço escolar, microempreendedores da área educacional e pais/responsáveis que necessitam de acesso rápido aos documentos de pagamento.
 
-> Tenha em mente que obrigatoriamente a aplicação deve possuir funcionalidades acessíveis a todos os tipos de usuário e outra funcionalidades restritas a certos tipos de usuários.
+## 🌟 Impacto Esperado
 
-## :triangular_flag_on_post:	 Principais funcionalidades da aplicação
+* **Eficiência Operacional:** Redução do tempo de emissão de carnês de horas para poucos segundos.
+* **Transparência:** Melhor comunicação entre escola e responsáveis sobre o status das mensalidades.
+* **Acessibilidade:** Disponibilização digital de boletos e carnês, evitando perdas de documentos físicos.
 
-Descreva ou liste brevemente as principais funcionalidades da aplicação que será desenvolvida. Destaque a funcionalidades que serão acessíveis a todos os usuários e aquelas restritas a usuários logados.
+## 🧑‍🤝‍🧑 Papéis ou tipos de usuário da aplicação
 
-## :spiral_calendar: Entidades ou tabelas do sistema
+* **Usuário não logado:** Acesso à página institucional e tela de cadastro de responsáveis.
+* **Admin:** Configuração global da escola e gerenciamento de permissões.
+* **Secretaria:** Perfil operacional para importação de CSV, geração de PDFs e controle de pagamentos.
+* **Responsável:** Acesso restrito para consulta de dependentes e download de seus respectivos carnês.
 
-Liste as principais entidades do sistema.
+## 🚩 Principais funcionalidades da aplicação
 
+### Funcionalidades Públicas
+* Página institucional da escola.
+* Interface de Login e Recuperação de Senha.
+* Cadastro de novo Responsável.
 
-----
+### Funcionalidades Restritas
+* **Painel Administrativo:** Dashboard com métricas de parcelas pagas, pendentes e vencidas.
+* **Módulo de Importação:** Processamento de arquivos CSV para cadastro massivo de alunos e mensalidades.
+* **Geração de PDF:** Motor de renderização para carnês individuais ou em lote (jsPDF).
+* **Gestão de Status:** Atualização manual de pagamentos e histórico financeiro.
 
-:warning::warning::warning: As informações a seguir devem ser enviadas juntamente com a versão final do projeto. :warning::warning::warning:
+## 🗓️ Entidades ou tabelas do sistema
 
+1.  **Usuário:** Gerenciamento de perfis e autenticação.
+2.  **Escola:** Dados cadastrais da instituição.
+3.  **Aluno:** Entidade central vinculada à escola e ao responsável.
+4.  **Carnê:** Agrupador de obrigações financeiras por período.
+5.  **Parcela:** Detalhamento de cada vencimento (vencimento, valor, status).
 
-----
+---
 
-## :desktop_computer: Tecnologias e frameworks utilizados
+## 🖥️ Tecnologias e frameworks utilizados
 
 **Frontend:**
-
-Lista as tecnologias, frameworks e bibliotecas utilizados.
+* Html puro ou React (Depende, iremos conversar)
+* Tailwind CSS
+* PapaParse (Processamento de CSV)
+* jsPDF + html2canvas (Geração de documentos)
 
 **Backend:**
+* Strapi (Headless CMS & API REST)
+* SQLite (Banco de Dados)
+* JWT (Autenticação e Autorização)
 
-Lista as tecnologias, frameworks e bibliotecas utilizados.
+## 📝 Operações implementadas para cada entidade
 
+| Entidade | Criação | Leitura | Atualização | Remoção |
+| :--- | :---: | :---: | :---: | :---: |
+| **Aluno** | X | X | X | X |
+| **Carnê / Parcela** | X | X | X | X |
+| **Escola** | X | X | X | - |
 
-## :shipit: Operações implementadas para cada entidade da aplicação
+## 🌐 Rotas da API REST utilizadas
 
-
-| Entidade| Criação | Leitura | Atualização | Remoção |
-| --- | --- | --- | --- | --- |
-| Entidade 1 | X |  X  |  | X |
-| Entidade 2 | X |    |  X | X |
-| Entidade 3 | X |    |  |  |
-
-> Lembre-se que é necessário implementar o CRUD de pelo menos duas entidades.
-
-## :neckbeard: Rotas da API REST utilizadas
-
-| Método HTTP | URL |
-| --- | --- |
-| GET | api/entidade1/|
-| POST | api/entidade2 |
+| Método HTTP | URL | Descrição |
+| :--- | :--- | :--- |
+| **POST** | `/api/auth/local` | Autenticação de usuário e recebimento de Token |
+| **POST** | `/api/auth/local/register` | Registro de novo responsável |
+| **GET** | `/api/alunos?populate=*` | Listagem completa de alunos e vínculos |
+| **POST** | `/api/alunos` | Criação de aluno (individual ou via bulk import) |
+| **GET** | `/api/carnes` | Recuperação de dados para geração de PDF |
+| **PUT** | `/api/parcelas/:id` | Alteração de status (Ex: de 'Pendente' para 'Pago') |
+| **GET** | `/api/users/me` | Verificação de perfil e permissões do usuário logado |
