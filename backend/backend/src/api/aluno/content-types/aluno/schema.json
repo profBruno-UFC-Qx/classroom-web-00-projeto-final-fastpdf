@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "alunos",
+  "info": {
+    "singularName": "aluno",
+    "pluralName": "alunos",
+    "displayName": "Aluno"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "NomeCrianca": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "Matricula": {
+      "type": "string",
+      "unique": true
+    },
+    "AnoNascimento": {
+      "type": "date"
+    },
+    "SerieCursada": {
+      "type": "string",
+      "unique": true
+    },
+    "NomeResponsavel": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "ContaResponavel": {
+      "type": "string"
+    },
+    "ValorMensalidade": {
+      "type": "decimal"
+    }
+  }
+}
