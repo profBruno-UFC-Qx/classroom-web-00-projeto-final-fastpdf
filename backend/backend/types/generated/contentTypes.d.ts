@@ -489,10 +489,12 @@ export interface ApiAlunoAluno extends Struct.CollectionTypeSchema {
   };
   attributes: {
     AnoNascimento: Schema.Attribute.Date;
+    carne: Schema.Attribute.Relation<'oneToOne', 'api::carne.carne'>;
     ContaResponavel: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    escola: Schema.Attribute.Relation<'oneToOne', 'api::escola.escola'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::aluno.aluno'> &
       Schema.Attribute.Private;
@@ -507,6 +509,133 @@ export interface ApiAlunoAluno extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     ValorMensalidade: Schema.Attribute.Decimal;
+  };
+}
+
+export interface ApiCarneCarne extends Struct.CollectionTypeSchema {
+  collectionName: 'carnes';
+  info: {
+    displayName: 'Carne';
+    pluralName: 'carnes';
+    singularName: 'carne';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    aluno: Schema.Attribute.Relation<'oneToOne', 'api::aluno.aluno'>;
+    Ano: Schema.Attribute.Integer & Schema.Attribute.Required;
+    Codigo: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::carne.carne'> &
+      Schema.Attribute.Private;
+    parcelas: Schema.Attribute.Relation<'oneToMany', 'api::parcela.parcela'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEscolaEscola extends Struct.CollectionTypeSchema {
+  collectionName: 'escolas';
+  info: {
+    displayName: 'Escola';
+    pluralName: 'escolas';
+    singularName: 'escola';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    CNPJ: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Email: Schema.Attribute.String;
+    Endereco: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::escola.escola'
+    > &
+      Schema.Attribute.Private;
+    Nome: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    Telefone: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiParcelaParcela extends Struct.CollectionTypeSchema {
+  collectionName: 'parcelas';
+  info: {
+    displayName: 'Parcela';
+    pluralName: 'parcelas';
+    singularName: 'parcela';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::parcela.parcela'
+    > &
+      Schema.Attribute.Private;
+    NumeroParcela: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    StatusPagamento: Schema.Attribute.Enumeration<
+      ['Pendente', 'Pago', 'Vencido']
+    > &
+      Schema.Attribute.DefaultTo<'Pendente'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Valor: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    Vencimento: Schema.Attribute.Date & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiResponsavelResponsavel extends Struct.CollectionTypeSchema {
+  collectionName: 'responsavels';
+  info: {
+    displayName: 'Responsavel';
+    pluralName: 'responsavels';
+    singularName: 'responsavel';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::responsavel.responsavel'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -966,7 +1095,6 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -980,6 +1108,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    escola: Schema.Attribute.Relation<'oneToOne', 'api::escola.escola'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1023,6 +1152,10 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::aluno.aluno': ApiAlunoAluno;
+      'api::carne.carne': ApiCarneCarne;
+      'api::escola.escola': ApiEscolaEscola;
+      'api::parcela.parcela': ApiParcelaParcela;
+      'api::responsavel.responsavel': ApiResponsavelResponsavel;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

@@ -1,0 +1,14 @@
+{
+  "kind": "collectionType",
+  "collectionName": "responsavels",
+  "info": {
+    "singularName": "responsavel",
+    "pluralName": "responsavels",
+    "displayName": "Responsavel"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {}
+}

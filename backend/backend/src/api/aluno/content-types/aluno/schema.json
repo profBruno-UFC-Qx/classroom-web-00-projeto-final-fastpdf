@@ -37,6 +37,17 @@
     },
     "ValorMensalidade": {
       "type": "decimal"
+    },
+    "escola": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::escola.escola"
+    },
+    "carne": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::carne.carne",
+      "mappedBy": "aluno"
     }
   }
 }

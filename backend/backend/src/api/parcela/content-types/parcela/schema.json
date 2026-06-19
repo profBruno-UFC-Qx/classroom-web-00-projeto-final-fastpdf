@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "parcelas",
+  "info": {
+    "singularName": "parcela",
+    "pluralName": "parcelas",
+    "displayName": "Parcela"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "NumeroParcela": {
+      "type": "integer",
+      "required": true
+    },
+    "Vencimento": {
+      "type": "date",
+      "required": true
+    },
+    "Valor": {
+      "type": "decimal",
+      "required": true
+    },
+    "StatusPagamento": {
+      "type": "enumeration",
+      "default": "Pendente",
+      "enum": [
+        "Pendente",
+        "Pago",
+        "Vencido"
+      ]
+    }
+  }
+}

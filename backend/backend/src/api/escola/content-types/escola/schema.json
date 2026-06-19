@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "escolas",
+  "info": {
+    "singularName": "escola",
+    "pluralName": "escolas",
+    "displayName": "Escola"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nome": {
+      "type": "string",
+      "required": true
+    },
+    "CNPJ": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "Endereco": {
+      "type": "string"
+    },
+    "Telefone": {
+      "type": "string"
+    },
+    "Email": {
+      "type": "string"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "escola"
+    }
+  }
+}
