@@ -34,6 +34,12 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "mappedBy": "escola"
+    },
+    "aluno": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::aluno.aluno",
+      "inversedBy": "escola"
     }
   }
 }

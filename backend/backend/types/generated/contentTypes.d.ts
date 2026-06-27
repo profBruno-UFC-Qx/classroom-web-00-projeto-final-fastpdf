@@ -489,6 +489,7 @@ export interface ApiAlunoAluno extends Struct.CollectionTypeSchema {
   };
   attributes: {
     AnoNascimento: Schema.Attribute.Date;
+    Ativo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     carne: Schema.Attribute.Relation<'oneToOne', 'api::carne.carne'>;
     ContaResponavel: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
@@ -504,7 +505,8 @@ export interface ApiAlunoAluno extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     NomeResponsavel: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    SerieCursada: Schema.Attribute.String & Schema.Attribute.Unique;
+    SerieCursada: Schema.Attribute.String;
+    TelefoneResponsavel: Schema.Attribute.BigInteger;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -551,6 +553,7 @@ export interface ApiEscolaEscola extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    aluno: Schema.Attribute.Relation<'oneToOne', 'api::aluno.aluno'>;
     CNPJ: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;

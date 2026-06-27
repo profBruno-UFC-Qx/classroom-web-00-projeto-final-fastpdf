@@ -11,6 +11,10 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "Ativo": {
+      "type": "boolean",
+      "default": true
+    },
     "NomeCrianca": {
       "type": "string",
       "required": true,
@@ -24,8 +28,7 @@
       "type": "date"
     },
     "SerieCursada": {
-      "type": "string",
-      "unique": true
+      "type": "string"
     },
     "NomeResponsavel": {
       "type": "string",
@@ -41,13 +44,17 @@
     "escola": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::escola.escola"
+      "target": "api::escola.escola",
+      "mappedBy": "aluno"
     },
     "carne": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::carne.carne",
       "mappedBy": "aluno"
+    },
+    "TelefoneResponsavel": {
+      "type": "biginteger"
     }
   }
 }

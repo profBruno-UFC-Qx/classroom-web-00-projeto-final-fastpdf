@@ -13,14 +13,14 @@ export const authService = {
         identifier,
         password,
       });
-      
+
       const { jwt, user } = response.data;
-      
+
       if (jwt) {
         localStorage.setItem('token', jwt);
         localStorage.setItem('user', JSON.stringify(user));
       }
-      
+
       return { jwt, user };
     } catch (error) {
       console.error('Login error:', error);
