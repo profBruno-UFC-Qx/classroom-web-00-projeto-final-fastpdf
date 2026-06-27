@@ -89,15 +89,15 @@ function ResponsavelDashboard() {
   const getInstallmentStatus = (aluno, inst) => {
     if (!inst) return 'A Vencer';
 
-    // 1. Read from backend DB field
-    const savedStatus = aluno.HistoricoPagamentos?.[inst.number];
+  
+    const savedStatus = aluno.HistoricoPagamentos?.[String(inst.number)];
     if (savedStatus) return savedStatus;
 
-    // 2. Read from localStorage as fallback
+    
     const localStatus = localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
     if (localStatus) return localStatus;
 
-    // 3. Fallback logic: check date relative to today
+   
     const today = new Date();
     if (today > inst.dueDate) {
       return 'Atrasado';
