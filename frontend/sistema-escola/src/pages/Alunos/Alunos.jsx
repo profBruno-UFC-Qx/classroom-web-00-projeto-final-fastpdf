@@ -437,7 +437,6 @@ function Alunos() {
             </div>
           </div>
           <div className="topbar-actions">
-            <button className="btn-topbar-action" onClick={handleOpenNewModal}><Plus size={16} />Novo Aluno</button>
             <div className="profile-avatar">{getUserInitial()}</div>
           </div>
         </header>
