@@ -129,7 +129,7 @@ function ResponsavelDashboard() {
         [selectedInst.number]: 'Pago'
       };
 
-      await alunoService.atualizarAluno(selectedChild.id, { HistoricoPagamentos: novoHistorico });
+      await alunoService.atualizarAluno(selectedChild.documentId, { HistoricoPagamentos: novoHistorico });
       
       // Update local state instantly
       selectedChild.HistoricoPagamentos = novoHistorico;
