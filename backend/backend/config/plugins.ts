@@ -1,5 +1,20 @@
-import type { Core } from '@strapi/strapi';
-
-const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({});
-
-export default config;
+export default ({ env }: any) => ({
+  email: {
+    config: {
+      provider: 'nodemailer',
+      providerOptions: {
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: 'teste2025aaa@gmail.com',
+          pass: 'nwppewvbjodhdxpd',
+        },
+      },
+      settings: {
+        defaultFrom: 'teste2025aaa@gmail.com',
+        defaultReplyTo: 'teste2025aaa@gmail.com',
+      },
+    },
+  },
+});
