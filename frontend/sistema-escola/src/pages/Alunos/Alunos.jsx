@@ -640,7 +640,6 @@ function Alunos() {
               {getUserInitial()}
             </div>
           </div>
-        </header>
 
         {/* Content Body */}
         <div className="page-body">

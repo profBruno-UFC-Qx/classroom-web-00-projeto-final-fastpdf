@@ -1,0 +1,538 @@
+/* CSS for Financeiro Page */
+
+.financeiro-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── Notebooks 15"/16" (≤ 1279px): slim left column ── */
+@media (max-width: 1279px) {
+  .financeiro-grid {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+/* ── Notebooks 13" (≤ 1023px): stack columns ── */
+@media (max-width: 1023px) {
+  .financeiro-grid {
+    grid-template-columns: 1fr;
+  }
+  .carnes-aluno-card {
+    height: 380px;
+  }
+}
+
+/* ── Tablets (≤ 767px): tighter padding ── */
+@media (max-width: 767px) {
+  .financeiro-grid {
+    grid-template-columns: 1fr;
+  }
+  .carnes-aluno-card {
+    height: 320px;
+  }
+  .financeiro-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .parcelas-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .carnes-aluno-header {
+    padding: 1rem 1.25rem;
+  }
+  .modal-backdrop {
+    align-items: flex-end;
+  }
+  .modal-card {
+    max-width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+/* ── Smartphones (≤ 480px): single column ── */
+@media (max-width: 480px) {
+  .financeiro-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .carnes-aluno-card {
+    height: 280px;
+  }
+  .parcelas-header h3 {
+    font-size: 0.95rem;
+  }
+  .modal-body {
+    padding: 1.25rem 1rem;
+  }
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+  .btn-modal-save,
+  .btn-modal-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+/* Left Card: Carnes por Aluno */
+.carnes-aluno-card {
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+}
+
+.carnes-aluno-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carnes-aluno-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.link-ver-todos {
+  font-size: 0.825rem;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity var(--transition-fast);
+}
+
+.link-ver-todos:hover {
+  opacity: 0.8;
+}
+
+.search-input-wrapper {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.search-input-wrapper input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(11, 44, 82, 0.05);
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 2.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.student-carnes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.student-carne-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.student-carne-item:hover {
+  background-color: #f8fafc;
+  border-color: var(--primary-light);
+}
+
+.student-carne-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.student-carne-details h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0 0.15rem 0;
+}
+
+.student-carne-details span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-gerar-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--white);
+  color: var(--primary);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-gerar-pdf:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-hover);
+}
+
+.list-scroll-footer {
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
+  background-color: #f8fafc;
+}
+
+/* Right Card: Controle de Parcelas */
+.parcelas-card {
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.parcelas-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.parcelas-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.parcelas-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon-secondary {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  background-color: var(--white);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-icon-secondary:hover {
+  background-color: var(--bg-light);
+}
+
+/* Status Badges */
+.status-badge.pendente {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.vencido,
+.status-badge.atrasado {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.status-badge.a-vencer {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.btn-marcar-pago {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.775rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-marcar-pago:hover {
+  background-color: #bbf7d0;
+  border-color: #86efac;
+}
+
+.icon-pago-receipt {
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Summary Cards Grid at bottom right */
+.financeiro-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .financeiro-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary-card {
+  background-color: var(--white);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-card.recebido {
+  border-left: 4px solid #16a34a;
+}
+
+.summary-card.a-receber {
+  border-left: 4px solid var(--primary);
+}
+
+.summary-card.atraso {
+  border-left: 4px solid #ef4444;
+  background-color: #fffafb;
+}
+
+.summary-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.summary-card.recebido .summary-value {
+  color: #16a34a;
+}
+
+.summary-card.atraso .summary-value {
+  color: #ef4444;
+}
+
+/* Printable PDF Slips Layout (Carnê) */
+.carne-print-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  color: #000;
+  font-family: Arial, sans-serif;
+}
+
+.carne-slip {
+  border: 1.5px dashed #000;
+  margin-bottom: 25px;
+  display: flex;
+  background-color: #fff;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* Left Canhoto (Recibo do Sacado) */
+.carne-left {
+  width: 230px;
+  border-right: 1.5px dashed #000;
+  padding: 12px;
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Right Boleto (Ficha de Compensação) */
+.carne-right {
+  flex: 1;
+  padding: 12px;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.carne-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.carne-logo-title {
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.carne-slip-num {
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.carne-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.carne-grid-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  vertical-align: top;
+}
+
+.carne-label {
+  font-size: 7px;
+  text-transform: uppercase;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.carne-value {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.carne-right-pix-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #000;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.carne-pix-qr-mock {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6px;
+  text-align: center;
+  font-weight: bold;
+  background-color: #f1f5f9;
+}
+
+.carne-barcode-mock {
+  height: 38px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 5px;
+  gap: 1px;
+}
+
+.barcode-bar {
+  background-color: #000;
+  height: 100%;
+}
+
+.barcode-bar.thin {
+  width: 1px;
+}
+
+.barcode-bar.medium {
+  width: 2px;
+}
+
+.barcode-bar.thick {
+  width: 4px;
+}
+
+.barcode-bar.wide {
+  width: 5px;
+}
+
+.barcode-space {
+  width: 1px;
+}
+
+.barcode-space.wide {
+  width: 2px;
+}
+
+/* Page spacing for printing */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+    margin: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .carne-print-container {
+    padding: 0;
+    max-width: 100%;
+  }
+  .carne-slip {
+    margin-bottom: 30px;
+  }
+}
