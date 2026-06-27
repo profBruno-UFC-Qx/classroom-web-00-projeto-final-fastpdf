@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, AlertTriangle } from 'lucide-react';
 import { authService } from '../../services/auth';
 import './Login.css';
 
 function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [loginSuccess, setLoginSuccess] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
 
   const validateForm = () => {
     if (!email) {
@@ -44,10 +43,13 @@ function Login() {
     try {
       // Connects to Strapi via authService
       const data = await authService.login(email, password);
-      
-      // Save current user state to display a nice dashboard/success layout
-      setCurrentUser(data.user);
-      setLoginSuccess(true);
+      if (data?.user?.cargo === 'secretaria') {
+        navigate('/alunos');
+      } else if (data?.user?.cargo === 'responsavel') {
+        navigate('/responsavel');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       // If server is not running or structure isn't ready in Strapi yet,
       // we'll handle the connection error nicely.
@@ -61,33 +63,6 @@ function Login() {
       setIsLoading(false);
     }
   };
-
-  const handleLogout = () => {
-    authService.logout();
-    setLoginSuccess(false);
-    setCurrentUser(null);
-    setEmail('');
-    setPassword('');
-  };
-
-  // If login was successful, render a beautiful landing card
-  if (loginSuccess) {
-    return (
-      <div className="login-container fade-in" style={{ justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--bg-light)' }}>
-        <div className="success-card">
-          <CheckCircle className="success-icon" size={64} />
-          <h2>Acesso Autorizado!</h2>
-          <p>
-            Você entrou com sucesso como <strong>{currentUser?.username || currentUser?.email || email}</strong>.
-            A conexão com o Strapi (Axios) está ativa e funcionando.
-          </p>
-          <button className="btn-secondary" onClick={handleLogout}>
-            Sair da Conta
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="login-container fade-in">
@@ -137,9 +112,9 @@ function Login() {
             <div className="form-group">
               <div className="label-row">
                 <label htmlFor="password">Senha</label>
-                <a href="#esqueci-senha" className="forgot-link">
+                <Link to="/recuperar-senha" className="forgot-link">
                   Esqueci senha
-                </a>
+                </Link>
               </div>
               <div className="input-wrapper">
                 <input
