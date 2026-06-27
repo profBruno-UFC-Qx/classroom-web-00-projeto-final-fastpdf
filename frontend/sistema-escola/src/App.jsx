@@ -9,6 +9,7 @@ import CarnePrint from './pages/Financeiro/CarnePrint';
 import Configuracoes from './pages/Configuracoes/Configuracoes';
 import ResponsavelDashboard from './pages/Responsavel/ResponsavelDashboard';
 import { authService } from './services/auth';
+import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
 
 // Protected route to enforce authentication and cargo roles
 const ProtectedRoute = ({ children, allowedCargos }) => {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro-escola" element={<CadastroEscola />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         
         <Route path="/dashboard" element={
           <ProtectedRoute allowedCargos={['admin']}>
