@@ -640,12 +640,6 @@ function Alunos() {
               <Plus size={16} />
               Novo Aluno
             </button>
-            <button className="icon-button">
-              <Bell size={20} />
-            </button>
-            <button className="icon-button">
-              <HelpCircle size={20} />
-            </button>
             <div className="profile-avatar">
               {getUserInitial()}
             </div>

@@ -338,12 +338,6 @@ function Dashboard() {
           </div>
 
           <div className="topbar-actions">
-            <button className="icon-button">
-              <Bell size={20} />
-            </button>
-            <button className="icon-button">
-              <HelpCircle size={20} />
-            </button>
             <div className="profile-avatar">
               {getUserInitial()}
             </div>
