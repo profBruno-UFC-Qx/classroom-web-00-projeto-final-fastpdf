@@ -1,0 +1,62 @@
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Lado esquerdo */
+.bg-login-left {
+    width: 50%;
+    background-color: #0c3879;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px;
+    color: #fff;
+}
+
+/* Conteúdo interno */
+.institucional-conteudo {
+    max-width: 400px;
+}
+
+.institucional-titulo {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.institucional-subtitulo {
+    font-size: 16px;
+    color: rgba(255,255,255,0.7);
+}
+
+/* Lado direito do formulariok*/
+.formulario-lado-direito {
+    width: 50%;
+    background-color: #f5f6f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Caixa do formulário */
+.login-form-container {
+    width: 350px;
+}
+/* Botão de cadastrar */
+.btn-login-submit {
+    background-color: #1e3a5f;
+    color: white;
+    border-radius: 6px;
+    padding: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+
+    width: 100%;        
+    margin-top: 15px;   
+}
+
+.btn-login-submit:hover {
+    background-color: #0a8345;
+}
