@@ -85,3 +85,36 @@ button {
     transform: translateY(0);
   }
 }
+
+/* ── Global responsive utilities ── */
+
+/* Prevent any element from causing horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Images and media scale within containers */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 767px) {
+  button, a, select, input[type="checkbox"], input[type="radio"] {
+    min-height: 40px;
+  }
+  select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  textarea {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+

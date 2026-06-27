@@ -23,20 +23,33 @@ function CadastroEscola() {
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Helper to format CNPJ dynamically (00.000.000/0000-00)
+  // Helper to format CPF (000.000.000-00) or CNPJ (00.000.000/0000-00) dynamically
   const handleCnpjChange = (e) => {
     const rawValue = e.target.value;
     const cleanValue = rawValue.replace(/\D/g, '');
     
     let formatted = cleanValue;
-    if (cleanValue.length > 2 && cleanValue.length <= 5) {
-      formatted = `${cleanValue.slice(0, 2)}.${cleanValue.slice(2)}`;
-    } else if (cleanValue.length > 5 && cleanValue.length <= 8) {
-      formatted = `${cleanValue.slice(0, 2)}.${cleanValue.slice(2, 5)}.${cleanValue.slice(5)}`;
-    } else if (cleanValue.length > 8 && cleanValue.length <= 12) {
-      formatted = `${cleanValue.slice(0, 2)}.${cleanValue.slice(2, 5)}.${cleanValue.slice(5, 8)}/${cleanValue.slice(8)}`;
-    } else if (cleanValue.length > 12) {
-      formatted = `${cleanValue.slice(0, 2)}.${cleanValue.slice(2, 5)}.${cleanValue.slice(5, 8)}/${cleanValue.slice(8, 12)}-${cleanValue.slice(12, 14)}`;
+    if (cleanValue.length <= 11) {
+      // Format as CPF: 000.000.000-00
+      if (cleanValue.length > 3 && cleanValue.length <= 6) {
+        formatted = `${cleanValue.slice(0, 3)}.${cleanValue.slice(3)}`;
+      } else if (cleanValue.length > 6 && cleanValue.length <= 9) {
+        formatted = `${cleanValue.slice(0, 3)}.${cleanValue.slice(3, 6)}.${cleanValue.slice(6)}`;
+      } else if (cleanValue.length > 9) {
+        formatted = `${cleanValue.slice(0, 3)}.${cleanValue.slice(3, 6)}.${cleanValue.slice(6, 9)}-${cleanValue.slice(9, 11)}`;
+      }
+    } else {
+      // Format as CNPJ: 00.000.000/0000-00
+      const truncated = cleanValue.slice(0, 14);
+      if (truncated.length > 2 && truncated.length <= 5) {
+        formatted = `${truncated.slice(0, 2)}.${truncated.slice(2)}`;
+      } else if (truncated.length > 5 && truncated.length <= 8) {
+        formatted = `${truncated.slice(0, 2)}.${truncated.slice(2, 5)}.${truncated.slice(5)}`;
+      } else if (truncated.length > 8 && truncated.length <= 12) {
+        formatted = `${truncated.slice(0, 2)}.${truncated.slice(2, 5)}.${truncated.slice(5, 8)}/${truncated.slice(8)}`;
+      } else if (truncated.length > 12) {
+        formatted = `${truncated.slice(0, 2)}.${truncated.slice(2, 5)}.${truncated.slice(5, 8)}/${truncated.slice(8, 12)}-${truncated.slice(12, 14)}`;
+      }
     }
     
     setCnpj(formatted);
@@ -66,8 +79,8 @@ function CadastroEscola() {
       return false;
     }
     const cleanCnpj = cnpj.replace(/\D/g, '');
-    if (cleanCnpj.length !== 14) {
-      setError('Por favor, insira um CNPJ válido com 14 dígitos.');
+    if (cleanCnpj.length !== 11 && cleanCnpj.length !== 14) {
+      setError('Por favor, insira um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
       return false;
     }
     
@@ -233,13 +246,13 @@ function CadastroEscola() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="cnpj">CNPJ *</label>
+                  <label htmlFor="cnpj">CPF ou CNPJ *</label>
                   <div className="input-wrapper">
                     <input
                       id="cnpj"
                       type="text"
                       className="input-field"
-                      placeholder="00.000.000/0000-00"
+                      placeholder="CPF ou CNPJ da escola"
                       value={cnpj}
                       onChange={handleCnpjChange}
                       maxLength={18}
