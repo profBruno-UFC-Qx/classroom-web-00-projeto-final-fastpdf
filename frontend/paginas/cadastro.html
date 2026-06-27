@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastPDF - Cadastro</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../site/css/style.css">
+</head>
+
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0 min-vh-100">
+            
+            <div class="bg-login-left">
+                <div class="institucional-conteudo">
+                    <h1 class="institucional-titulo">Simplifique o acesso aos seus documentos.</h1>
+                    <p class="institucional-subtitulo">Crie sua conta de Responsável para consultar dependentes, acompanhar mensalidades e emitir carnês digitais rapidamente.</p>
+                </div>
+                <div class="institucional-rodape">
+                    <p class="xtra-small">&copy; 2026 FastPDF. Todos os direitos reservados.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-7 d-flex formulario-lado-direito">
+                <div class="login-form-container">
+                    
+                    <div class="cadastro-cabecalho">
+                        <h2 class="cadastro-titulo">Criar nova conta</h2>
+                        <p class="cadastro-subtitulo">Cadastre-se como responsável para acessar o portal do aluno.</p>
+                    </div>
+
+                    <form>
+                        <div class="campo-grupo">
+                            <label for="nome" class="campo-rotulo">Nome Completo</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="nome" placeholder="Seu nome completo" required>
+                            </div>
+                        </div>
+
+                        <div class="campo-grupo">
+                            <label for="email" class="campo-rotulo">E-mail</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" placeholder="seu-email@exemplo.com" required>
+                            </div>
+                        </div>
+
+                        <div class="campo-grupo">
+                            <label for="telefone" class="campo-rotulo">WhatsApp / Telefone</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+                                <input type="tel" class="form-control" id="telefone" placeholder="(88) 99999-9999" required>
+                            </div>
+                        </div>
+
+                        <div class="campo-grupo-final">
+                            <label for="senha" class="campo-rotulo">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="senha" placeholder="Mínimo 8 caracteres" minlength="8" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-login-submit">
+                            Criar minha conta <i class="bi bi-check-circle"></i>
+                        </button>
+
+                        <div class="cadastro-rodape-links">
+                            <p class="link-voltar">Já tem uma conta? <a href="login.html" class="link-destaque">Entrar</a></p>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../site/js/site.js"></script>
+</body>
+
+</html>
