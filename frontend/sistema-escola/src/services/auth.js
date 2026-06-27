@@ -166,5 +166,27 @@ export const authService = {
       console.error('Error fetching user profile:', error);
       throw error.response?.data?.error || new Error('Erro ao obter perfil do usuário');
     }
+  },
+
+  /**
+   * Register a responsible user in Strapi
+   */
+  async criarResponsavel(username, email, password, escolaId) {
+    try {
+      const response = await api.post('/users', {
+        username,
+        email,
+        password,
+        escola: escolaId,
+        cargo: 'responsavel',
+        provider: 'local',
+        confirmed: true,
+        role: 1
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating responsible user:', error);
+      throw error.response?.data?.error || new Error('Ocorreu um erro ao criar o responsável');
+    }
   }
 };

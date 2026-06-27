@@ -18,7 +18,7 @@
     "NomeCrianca": {
       "type": "string",
       "required": true,
-      "unique": true
+      "unique": false
     },
     "Matricula": {
       "type": "string",
@@ -41,11 +41,14 @@
     "ValorMensalidade": {
       "type": "decimal"
     },
+    "HistoricoPagamentos": {
+      "type": "json"
+    },
     "escola": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::escola.escola",
-      "mappedBy": "aluno"
+      "inversedBy": "alunos"
     },
     "carne": {
       "type": "relation",

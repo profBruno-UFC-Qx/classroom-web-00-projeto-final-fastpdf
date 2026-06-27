@@ -290,18 +290,54 @@ function Alunos() {
         }
 
         setLoading(true);
+
+        // 1. Pre-validation phase: check formats and required fields
+        const validationErrors = [];
+
+        for (let i = 0; i < parsedRows.length; i++) {
+          const row = parsedRows[i];
+          const lineNum = i + 2; // Line number in file (1-based + 1 for header)
+
+          const nomeCrianca = (row.Nome || row.nome || row.NomeCrianca || '').trim();
+          const nomeResponsavel = (row.Responsavel || row.responsavel || row.NomeResponsavel || '').trim();
+          const valorMensalidadeRaw = row.Mensalidade || row.mensalidade || row.ValorMensalidade;
+
+          if (!nomeCrianca) {
+            validationErrors.push(`Linha ${lineNum}: Nome do aluno é obrigatório.`);
+          }
+
+          if (!nomeResponsavel) {
+            validationErrors.push(`Linha ${lineNum}: Nome do responsável é obrigatório.`);
+          }
+
+          if (valorMensalidadeRaw) {
+            const cleanVal = valorMensalidadeRaw.replace(/[^\d,.-]/g, '').replace(',', '.');
+            const val = parseFloat(cleanVal);
+            if (isNaN(val) || val < 0) {
+              validationErrors.push(`Linha ${lineNum}: Mensalidade inválida ("${valorMensalidadeRaw}").`);
+            }
+          }
+        }
+
+        // If there are validation errors, abort!
+        if (validationErrors.length > 0) {
+          setLoading(false);
+          alert(`Importação cancelada devido a erros de validação:\n\n${validationErrors.join('\n')}\n\nNenhum aluno foi cadastrado.`);
+          e.target.value = ''; // Reset file input
+          return;
+        }
+
+        // 2. Execution phase (Only runs if all rows are valid)
         let successCount = 0;
-        let errorCount = 0;
+        const currentUser = authService.getCurrentUser();
 
         for (const row of parsedRows) {
-          const nomeCrianca = row.Nome || row.nome || row.NomeCrianca;
+          const nomeCrianca = (row.Nome || row.nome || row.NomeCrianca).trim();
           const serieCursada = row.Turma || row.turma || row.SerieCursada;
           const valorMensalidadeRaw = row.Mensalidade || row.mensalidade || row.ValorMensalidade;
-          const nomeResponsavel = row.Responsavel || row.responsavel || row.NomeResponsavel;
+          const nomeResponsavel = (row.Responsavel || row.responsavel || row.NomeResponsavel).trim();
           const contaResponsavel = row.Email || row.email || row.ContaResponavel;
           const telefoneResponsavelVal = row.Telefone || row.telefone || row.TelefoneResponsavel || '';
-
-          if (!nomeCrianca) continue;
 
           // Convert formatted currency to float number
           let valorDecimal = 0;
@@ -323,31 +359,39 @@ function Alunos() {
             ValorMensalidade: valorDecimal
           };
 
-          const currentUser = authService.getCurrentUser();
           if (currentUser?.escola?.id) {
             payload.escola = currentUser.escola.id;
           }
 
-          try {
-            await alunoService.cadastrarAluno(payload);
-            successCount++;
-          } catch (err) {
-            console.error('Erro ao importar linha:', row, err);
-            errorCount++;
+          await alunoService.cadastrarAluno(payload);
+          successCount++;
+
+          // Auto-create responsible user account (email as username/email, matricula as password)
+          if (contaResponsavel && contaResponsavel.trim()) {
+            try {
+              await authService.criarResponsavel(
+                contaResponsavel.trim(),
+                contaResponsavel.trim(),
+                matricula,
+                currentUser?.escola?.id
+              );
+            } catch (uErr) {
+              console.warn('Failed to auto-create responsible user during CSV import:', uErr);
+            }
           }
         }
 
-        alert(`Processamento concluído!\n${successCount} alunos importados com sucesso.${errorCount > 0 ? `\n${errorCount} cadastros falharam.` : ''}`);
+        alert(`Processamento concluído!\n${successCount} alunos importados com sucesso.`);
         carregarAlunos();
       } catch (err) {
         console.error(err);
-        alert('Erro ao decodificar o arquivo CSV.');
+        alert('Erro ao processar o arquivo CSV: ' + (err.message || err));
+      } finally {
+        setLoading(false);
+        e.target.value = ''; // Reset file input
       }
     };
-    reader.readAsText(file, 'UTF-8');
-
-    // Clear input so same file can be imported again
-    e.target.value = '';
+    reader.readAsText(file);
   };
 
   const handleManualSave = async (e) => {
@@ -405,6 +449,20 @@ function Alunos() {
         }
 
         await alunoService.cadastrarAluno(payload);
+
+        // Auto-create responsible user account (email as username/email, matricula as password)
+        if (emailResponsavel.trim() && currentUser?.escola?.id) {
+          try {
+            await authService.criarResponsavel(
+              emailResponsavel.trim(),
+              emailResponsavel.trim(),
+              matricula,
+              currentUser.escola.id
+            );
+          } catch (uErr) {
+            console.warn('Failed to auto-create responsible user during manual registration:', uErr);
+          }
+        }
       }
 
       setIsModalOpen(false);

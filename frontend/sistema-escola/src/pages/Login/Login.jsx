@@ -45,6 +45,8 @@ function Login() {
       const data = await authService.login(email, password);
       if (data?.user?.cargo === 'secretaria') {
         navigate('/alunos');
+      } else if (data?.user?.cargo === 'responsavel') {
+        navigate('/responsavel');
       } else {
         navigate('/dashboard');
       }

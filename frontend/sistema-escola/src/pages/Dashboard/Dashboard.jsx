@@ -122,7 +122,7 @@ function Dashboard() {
   const getInstallmentStatus = (aluno, inst) => {
     if (!inst) return 'A Vencer';
 
-    const savedStatus = localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
+    const savedStatus = aluno.HistoricoPagamentos?.[inst.number] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
     if (savedStatus) return savedStatus;
 
     const monthNum = monthNames.indexOf(selectedMonth) + 1;

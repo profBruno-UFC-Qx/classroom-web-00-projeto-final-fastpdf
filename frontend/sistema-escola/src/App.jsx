@@ -7,6 +7,7 @@ import Alunos from './pages/Alunos/Alunos';
 import Financeiro from './pages/Financeiro/Financeiro';
 import CarnePrint from './pages/Financeiro/CarnePrint';
 import Configuracoes from './pages/Configuracoes/Configuracoes';
+import ResponsavelDashboard from './pages/Responsavel/ResponsavelDashboard';
 import { authService } from './services/auth';
 
 // Protected route to enforce authentication and cargo roles
@@ -19,6 +20,9 @@ const ProtectedRoute = ({ children, allowedCargos }) => {
   const cargo = user?.cargo || 'admin';
 
   if (allowedCargos && !allowedCargos.includes(cargo)) {
+    if (cargo === 'responsavel') {
+      return <Navigate to="/responsavel" replace />;
+    }
     return <Navigate to="/alunos" replace />;
   }
 
@@ -40,7 +44,7 @@ function App() {
         } />
         
         <Route path="/alunos" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedCargos={['admin', 'secretaria']}>
             <Alunos />
           </ProtectedRoute>
         } />
@@ -60,6 +64,12 @@ function App() {
         <Route path="/configuracoes" element={
           <ProtectedRoute allowedCargos={['admin']}>
             <Configuracoes />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/responsavel" element={
+          <ProtectedRoute allowedCargos={['responsavel']}>
+            <ResponsavelDashboard />
           </ProtectedRoute>
         } />
       </Routes>

@@ -651,3 +651,112 @@
   background-color: #dc2626;
 }
 
+/* Table always scrollable horizontally on all screens */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Notebooks 13" (≤ 1023px) ── */
+@media (max-width: 1023px) {
+  .alunos-table th,
+  .alunos-table td {
+    padding: 0.875rem 1rem;
+    font-size: 0.85rem;
+  }
+  .student-info h4 {
+    font-size: 0.9rem;
+  }
+}
+
+/* ── Tablets (≤ 767px) ── */
+@media (max-width: 767px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.25rem;
+  }
+  .filters-left {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .filter-select {
+    flex: 1;
+    min-width: 140px;
+  }
+  .alunos-table th,
+  .alunos-table td {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8rem;
+  }
+  .pagination-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .modal-card, .confirm-modal-card {
+    max-width: 95vw;
+    margin: 0 auto;
+  }
+}
+
+/* ── Smartphones (≤ 480px) ── */
+@media (max-width: 480px) {
+  .filter-bar {
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+  }
+  .filters-left {
+    flex-direction: column;
+    width: 100%;
+  }
+  .filter-select {
+    width: 100%;
+  }
+  /* Hide less important table columns on very small screens */
+  .alunos-table th:nth-child(2),
+  .alunos-table td:nth-child(2) {
+    display: none; /* hide "Responsável" column */
+  }
+  .alunos-table th,
+  .alunos-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.775rem;
+  }
+  .student-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  .modal-card, .confirm-modal-card {
+    max-width: 98vw;
+    margin: 0 auto;
+  }
+  .modal-body {
+    padding: 1.25rem 1rem;
+  }
+  .modal-header {
+    padding: 1.25rem 1.25rem;
+  }
+  .modal-footer, .confirm-modal-footer {
+    padding: 0.875rem 1.25rem;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+  .btn-modal-save, .btn-modal-cancel, .btn-confirm-cancel, .btn-confirm-delete {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .pagination-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    text-align: center;
+  }
+  .pagination-pages {
+    justify-content: center;
+  }
+}
+
+

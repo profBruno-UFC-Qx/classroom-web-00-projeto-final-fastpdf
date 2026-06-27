@@ -158,7 +158,7 @@ function Financeiro() {
   const getInstallmentStatus = (aluno, inst) => {
     if (!inst) return 'A Vencer';
 
-    const savedStatus = localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
+    const savedStatus = aluno.HistoricoPagamentos?.[inst.number] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
     if (savedStatus) return savedStatus;
 
     const monthNum = Number(monthMap[selectedMonth] || '06');
@@ -194,19 +194,43 @@ function Financeiro() {
     });
   };
 
-  const handleMarkAsPaid = (aluno) => {
+  const handleMarkAsPaid = async (aluno) => {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
-      localStorage.setItem(`financeiro_status_${aluno.id}_inst_${inst.number}`, 'Pago');
-      setUpdateTrigger(prev => prev + 1);
+      try {
+        const currentHist = aluno.HistoricoPagamentos || {};
+        const novoHistorico = {
+          ...currentHist,
+          [inst.number]: 'Pago'
+        };
+        await alunoService.atualizarAluno(aluno.id, { HistoricoPagamentos: novoHistorico });
+        // Update local object property so changes are reflected in local state
+        aluno.HistoricoPagamentos = novoHistorico;
+        setUpdateTrigger(prev => prev + 1);
+      } catch (err) {
+        console.error('Error marking payment as paid on backend:', err);
+        alert('Não foi possível registrar o pagamento no servidor.');
+      }
     }
   };
 
-  const handleUnmarkPaid = (aluno) => {
+  const handleUnmarkPaid = async (aluno) => {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
-      localStorage.setItem(`financeiro_status_${aluno.id}_inst_${inst.number}`, 'Pendente');
-      setUpdateTrigger(prev => prev + 1);
+      try {
+        const currentHist = aluno.HistoricoPagamentos || {};
+        const novoHistorico = {
+          ...currentHist,
+          [inst.number]: 'Pendente'
+        };
+        await alunoService.atualizarAluno(aluno.id, { HistoricoPagamentos: novoHistorico });
+        // Update local object property so changes are reflected in local state
+        aluno.HistoricoPagamentos = novoHistorico;
+        setUpdateTrigger(prev => prev + 1);
+      } catch (err) {
+        console.error('Error unmarking payment on backend:', err);
+        alert('Não foi possível alterar o status de pagamento no servidor.');
+      }
     }
   };
 

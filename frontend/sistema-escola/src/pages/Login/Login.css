@@ -294,27 +294,89 @@
   75% { transform: translateX(5px); }
 }
 
-/* Responsive adjustments */
-@media (max-width: 992px) {
+/* ── Large monitors (≥ 1440px): wider hero text ── */
+@media (min-width: 1440px) {
+  .login-left {
+    padding: 4rem 6rem;
+  }
+  .login-left-content h1 {
+    font-size: 3.5rem;
+  }
+  .login-right {
+    padding: 3rem 4rem;
+  }
+}
+
+/* ── Notebooks 15" / 16" (1280px – 1439px) ── */
+@media (max-width: 1279px) {
+  .login-left {
+    padding: 3.5rem 4rem;
+  }
+  .login-left-content h1 {
+    font-size: 2.75rem;
+  }
+}
+
+/* ── Notebooks 13" (1024px – 1279px) ── */
+@media (max-width: 1023px) {
   .login-left {
     padding: 3rem;
   }
   .login-left-content h1 {
     font-size: 2.25rem;
   }
+  .login-left-content p {
+    font-size: 1rem;
+  }
 }
 
-@media (max-width: 768px) {
+/* ── Tablets (768px – 1023px): slim left panel ── */
+@media (max-width: 900px) {
+  .login-left {
+    flex: 0.8;
+    padding: 2.5rem;
+  }
+  .login-left-content h1 {
+    font-size: 2rem;
+  }
+  .login-right-content {
+    max-width: 380px;
+  }
+}
+
+/* ── Small tablets / large phones (≤ 767px): hide left panel ── */
+@media (max-width: 767px) {
   .login-container {
     flex-direction: column;
   }
-  
   .login-left {
-    display: none; /* Hide left side on small screens, as is standard */
+    display: none;
   }
-  
   .login-right {
     flex: 1;
-    padding: 3rem 1.5rem;
+    padding: 3rem 1.75rem;
   }
 }
+
+/* ── Smartphones (≤ 480px): tighter form ── */
+@media (max-width: 480px) {
+  .login-right {
+    padding: 2rem 1.25rem;
+  }
+  .login-header h2 {
+    font-size: 1.85rem;
+  }
+  .input-field {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+  }
+  .btn-submit {
+    padding: 0.75rem;
+    font-size: 0.925rem;
+  }
+  .register-prompt {
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+

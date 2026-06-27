@@ -511,28 +511,94 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* Mobile responsive menu button */
+/* Mobile responsive menu button — hidden by default on desktop */
 .btn-menu-toggle {
   display: none;
 }
 
-/* Responsiveness */
-@media (max-width: 1200px) {
+/* =============================================
+   RESPONSIVENESS — Mobile First
+   Breakpoints:
+   480px  → smartphones
+   768px  → tablets
+   1024px → notebooks 13"
+   1280px → notebooks 15" / 16"
+   1440px → wide monitors (already handled by base styles)
+   ============================================= */
+
+/* ── Large monitors (≥ 1440px): give more breathing room ── */
+@media (min-width: 1440px) {
+  .sidebar {
+    width: 280px;
+  }
+  .page-body {
+    padding: 3rem;
+    gap: 3rem;
+  }
   .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+/* ── Notebooks 15" / 16" (1280px – 1439px): fine-tune sidebar and grid ── */
+@media (max-width: 1279px) {
+  .sidebar {
+    width: 240px;
+    padding: 1.75rem 1rem;
+  }
+  .page-body {
+    padding: 2rem;
+    gap: 2rem;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .topbar {
+    padding: 0 2rem;
+  }
+  .search-bar {
+    width: 260px;
+  }
+}
+
+/* ── Notebooks 13" (1024px – 1279px): collapse sidebar ── */
+@media (max-width: 1023px) {
+  .sidebar {
+    width: 220px;
+    padding: 1.5rem 0.875rem;
+  }
+  .menu-item {
+    font-size: 0.875rem;
+    padding: 0.65rem 0.875rem;
+  }
+  .logo-text h2 {
+    font-size: 1rem;
+  }
+  .page-body {
+    padding: 1.75rem;
+    gap: 1.75rem;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .search-bar {
+    width: 220px;
+  }
+  .topbar {
+    padding: 0 1.75rem;
+  }
+}
+
+/* ── Tablets (768px – 1023px): hide sidebar, show hamburger ── */
+@media (max-width: 767px) {
   .dashboard-container {
     flex-direction: column;
   }
 
   .sidebar {
-    display: none; /* Hide standard sidebar on mobile */
+    display: none;
   }
 
-  /* When sidebar is toggled visible in mobile (using a modal/drawer class) */
   .sidebar.mobile-open {
     display: flex;
     position: fixed;
@@ -540,7 +606,7 @@
     left: 0;
     height: 100vh;
     width: 260px;
-    z-index: 100;
+    z-index: 200;
     box-shadow: var(--shadow-lg);
     animation: slideIn 0.3s ease-out;
   }
@@ -550,45 +616,57 @@
     to { transform: translateX(0); }
   }
 
-  .topbar {
-    padding: 0 1.5rem;
-  }
-
-  .search-bar {
-    width: 200px;
-  }
-
   .btn-menu-toggle {
     display: flex;
     background: none;
     border: none;
     color: var(--primary);
     padding: 0.25rem;
+    cursor: pointer;
+  }
+
+  .topbar {
+    padding: 0 1.25rem;
+    height: 60px;
+  }
+
+  .search-bar {
+    width: 180px;
+  }
+
+  .topbar-actions {
+    gap: 0.75rem;
+  }
+
+  .btn-topbar-action span {
+    display: none; /* icon only on tablet */
   }
 
   .page-body {
-    padding: 1.5rem;
-    gap: 1.5rem;
+    padding: 1.25rem;
+    gap: 1.25rem;
   }
 
   .page-header-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .page-actions {
     width: 100%;
+    display: flex;
+    gap: 0.75rem;
   }
 
   .page-actions button {
     flex: 1;
     font-size: 0.85rem;
-    padding: 0.65rem;
+    padding: 0.6rem 0.75rem;
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
 
@@ -600,3 +678,56 @@
     height: 220px;
   }
 }
+
+/* ── Smartphones (≤ 480px): single column, compact ── */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 1rem;
+    height: 56px;
+  }
+
+  .search-bar {
+    width: 140px;
+  }
+
+  .search-input {
+    font-size: 0.8rem;
+  }
+
+  .topbar-actions {
+    gap: 0.5rem;
+  }
+
+  .icon-button {
+    display: none; /* hide extra icon buttons on small phones */
+  }
+
+  .page-body {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .page-title h1 {
+    font-size: 1.35rem;
+  }
+
+  .page-title p {
+    font-size: 0.825rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .chart-wrapper {
+    height: 180px;
+  }
+
+  .recent-table th,
+  .recent-table td {
+    padding: 0.75rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
