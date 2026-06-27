@@ -1,9 +1,9 @@
+import bcrypt from 'bcryptjs';
+
 export default {
   register() {},
 
   async bootstrap({ strapi }: { strapi: any }) {
-
-
     try {
       const authRole = await strapi.query('plugin::users-permissions.role').findOne({
         where: { type: 'authenticated' },
@@ -49,12 +49,6 @@ export default {
           }
         }
 
-
-
-        // Migration: Sync existing students' responsibles to have user accounts
-        // Uses the users-permissions service so passwords are properly hashed
-        const userService = strapi.plugin('users-permissions').service('user');
-
         try {
           const alunos = await strapi.query('api::aluno.aluno').findMany({
             populate: ['escola']
@@ -66,31 +60,33 @@ export default {
             if (!email || !matricula) continue;
 
             const trimmedEmail = email.toLowerCase().trim();
-            let user = await strapi.query('plugin::users-permissions.user').findOne({
+            const hashedPassword = await bcrypt.hash(matricula, 10);
+
+            const user = await strapi.query('plugin::users-permissions.user').findOne({
               where: { email: trimmedEmail }
             });
 
             if (user) {
-              // Use the service's edit() method which hashes the password
-              // provider='local' is required by Strapi v5 for /auth/local login
-              await userService.edit(user.id, {
-                cargo: 'responsavel',
-                provider: 'local',
-                password: matricula
+              await strapi.query('plugin::users-permissions.user').update({
+                where: { id: user.id },
+                data: {
+                  cargo: 'responsavel',
+                  provider: 'local',
+                  password: hashedPassword
+                }
               });
               console.log(`[FastPDF Migration] Atualizado responsável existente: ${trimmedEmail}`);
             } else {
-              // Use the service's add() method which hashes the password
-              // provider='local' is required by Strapi v5 for /auth/local login
-              await userService.add({
-                username: trimmedEmail,
-                email: trimmedEmail,
-                password: matricula,
-                cargo: 'responsavel',
-                provider: 'local',
-                confirmed: true,
-                role: authRole.id,
-                escola: aluno.escola?.documentId
+              await strapi.query('plugin::users-permissions.user').create({
+                data: {
+                  username: trimmedEmail,
+                  email: trimmedEmail,
+                  password: hashedPassword,
+                  cargo: 'responsavel',
+                  provider: 'local',
+                  confirmed: true,
+                  role: authRole.id
+                }
               });
               console.log(`[FastPDF Migration] Criado novo responsável: ${trimmedEmail}`);
             }
@@ -104,4 +100,3 @@ export default {
     }
   },
 };
-

@@ -4,9 +4,11 @@ import api from './api';
 export const authService = {
   async login(identifier, password) {
     try {
-      const response = await api.post('/auth/local', {
+      const response = await axios.post('http://localhost:1337/api/auth/local', {
         identifier,
         password,
+      }, {
+        headers: { 'Content-Type': 'application/json' }
       });
 
       const { jwt, user } = response.data;
