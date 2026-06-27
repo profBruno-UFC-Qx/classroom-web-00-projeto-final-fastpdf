@@ -381,6 +381,10 @@ function Alunos() {
       parentName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTurma = selectedTurma === 'Todas' || grade === selectedTurma;
     return matchesSearch && matchesTurma;
+  }).sort((a, b) => {
+    const nomeA = a.NomeCrianca || '';
+    const nomeB = b.NomeCrianca || '';
+    return nomeA.localeCompare(nomeB, 'pt-BR');
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -588,7 +592,7 @@ function Alunos() {
                   <input id="telefoneResponsavel" type="text" className="input-field" style={{ paddingLeft: '1rem' }} placeholder="Ex: (11) 98765-4321" value={telefoneResponsavel} onChange={handlePhoneChange} required />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email do Responsável</label>
                   <input id="email" type="email" className="input-field" style={{ paddingLeft: '1rem' }} placeholder="exemplo@email.com" value={emailResponsavel} onChange={(e) => setEmailResponsavel(e.target.value)} disabled={isEditMode} />
                 </div>
                 {isEditMode && (
