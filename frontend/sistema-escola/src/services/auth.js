@@ -18,7 +18,15 @@ export const authService = {
 
       if (jwt) {
         localStorage.setItem('token', jwt);
-        localStorage.setItem('user', JSON.stringify(user));
+        try {
+          // Fetch full user profile with relations populated
+          const profile = await authService.obterPerfil(user.id);
+          localStorage.setItem('user', JSON.stringify(profile));
+          return { jwt, user: profile };
+        } catch (profileErr) {
+          console.error('Me error:', profileErr);
+          localStorage.setItem('user', JSON.stringify(user));
+        }
       }
 
       return { jwt, user };
@@ -97,6 +105,66 @@ export const authService = {
     } catch (error) {
       console.error('Error updating user:', error);
       throw error.response?.data?.error || new Error('Ocorreu um erro ao atualizar o usuário');
+    }
+  },
+
+  /**
+   * Register a secretary user in Strapi
+   */
+  async criarSecretaria(username, email, password, escolaId) {
+    try {
+      const response = await api.post('/users', {
+        username,
+        email,
+        password,
+        escola: escolaId,
+        cargo: 'secretaria',
+        confirmed: true,
+        role: 1
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating secretary:', error);
+      throw error.response?.data?.error || new Error('Ocorreu um erro ao criar a secretaria');
+    }
+  },
+
+  /**
+   * List all secretary users for a specific school
+   */
+  async listarSecretarias(escolaId) {
+    try {
+      const response = await api.get(`/users?filters[escola][id][$eq]=${escolaId}&filters[cargo][$eq]=secretaria`);
+      return response.data;
+    } catch (error) {
+      console.error('Error listing secretaries:', error);
+      throw error.response?.data?.error || new Error('Ocorreu um erro ao listar as secretarias');
+    }
+  },
+
+  /**
+   * Delete a secretary user
+   */
+  async deletarSecretaria(id) {
+    try {
+      const response = await api.delete(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting secretary:', error);
+      throw error.response?.data?.error || new Error('Ocorreu um erro ao deletar a secretaria');
+    }
+  },
+
+  /**
+   * Get full user profile with relations populated
+   */
+  async obterPerfil(id) {
+    try {
+      const response = await api.get(`/users/${id}?populate=*`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error.response?.data?.error || new Error('Erro ao obter perfil do usuário');
     }
   }
 };

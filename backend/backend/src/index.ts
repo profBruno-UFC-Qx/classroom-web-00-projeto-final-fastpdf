@@ -1,20 +1,39 @@
-// import type { Core } from '@strapi/strapi';
-
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register() {},
 
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }: { strapi: any }) {
+    try {
+      const authRole = await strapi.query('plugin::users-permissions.role').findOne({
+        where: { type: 'authenticated' },
+        populate: ['permissions']
+      });
+
+      if (authRole) {
+        const requiredActions = [
+          'plugin::users-permissions.user.find',
+          'plugin::users-permissions.user.findOne',
+          'plugin::users-permissions.user.create',
+          'plugin::users-permissions.user.update',
+          'plugin::users-permissions.user.destroy',
+          'api::escola.escola.find',
+          'api::escola.escola.findOne'
+        ];
+
+        for (const actionName of requiredActions) {
+          const hasPerm = authRole.permissions.some((p: any) => p.action === actionName);
+          if (!hasPerm) {
+            await strapi.query('plugin::users-permissions.permission').create({
+              data: {
+                action: actionName,
+                role: authRole.id
+              }
+            });
+            console.log(`[FastPDF Bootstrap] Permissão criada para: ${actionName}`);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[FastPDF Bootstrap] Falha ao configurar permissões do User:', err);
+    }
+  },
 };

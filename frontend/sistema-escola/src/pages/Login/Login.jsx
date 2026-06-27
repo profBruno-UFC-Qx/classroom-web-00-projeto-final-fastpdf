@@ -42,10 +42,12 @@ function Login() {
 
     try {
       // Connects to Strapi via authService
-      await authService.login(email, password);
-      
-      // Redirects to Dashboard immediately
-      navigate('/dashboard');
+      const data = await authService.login(email, password);
+      if (data?.user?.cargo === 'secretaria') {
+        navigate('/alunos');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       // If server is not running or structure isn't ready in Strapi yet,
       // we'll handle the connection error nicely.

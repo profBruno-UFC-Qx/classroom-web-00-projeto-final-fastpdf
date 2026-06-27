@@ -20,6 +20,7 @@ import {
   MoreVertical
 } from 'lucide-react';
 import { authService } from '../../services/auth';
+import { alunoService } from '../../services/aluno';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -28,14 +29,9 @@ function Dashboard() {
   const [user, setUser] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
 
-  const chartData = [
-    { month: 'Jan', value: 3000, x: 60, y: 200 },
-    { month: 'Fev', value: 8000, x: 160, y: 150 },
-    { month: 'Mar', value: 6000, x: 260, y: 170 },
-    { month: 'Abr', value: 14000, x: 360, y: 90 },
-    { month: 'Mai', value: 11000, x: 460, y: 120 },
-    { month: 'Jun', value: 17000, x: 560, y: 60 },
-  ];
+  // Dynamic student data
+  const [alunos, setAlunos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch current user details on mount, ensure authenticated
   useEffect(() => {
@@ -45,6 +41,23 @@ function Dashboard() {
     }
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
+
+    const carregarDados = async () => {
+      try {
+        const data = await alunoService.obterAlunos();
+        if (currentUser?.escola?.id) {
+          const filtered = data.filter(aluno => aluno.escola?.id === currentUser.escola.id);
+          setAlunos(filtered);
+        } else {
+          setAlunos(data);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar dados no Dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    carregarDados();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -56,6 +69,176 @@ function Dashboard() {
     if (user?.username) return user.username.charAt(0).toUpperCase();
     if (user?.email) return user.email.charAt(0).toUpperCase();
     return 'A';
+  };
+
+  // Month and Year navigation/selection
+  const monthNames = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  const getInitialPeriod = () => {
+    const today = new Date();
+    const curMonth = monthNames[today.getMonth()];
+    const curYear = today.getFullYear().toString();
+    return { month: curMonth, year: curYear };
+  };
+
+  const initialPeriod = getInitialPeriod();
+  const [selectedMonth, setSelectedMonth] = useState(initialPeriod.month);
+  const [selectedYear, setSelectedYear] = useState(initialPeriod.year);
+
+  const monthMap = {
+    Janeiro: '01', Fevereiro: '02', Março: '03', Abril: '04', Maio: '05', Junho: '06',
+    Julho: '07', Agosto: '08', Setembro: '09', Outubro: '10', Novembro: '11', Dezembro: '12'
+  };
+
+  const getStudentInstallments = (aluno) => {
+    const baseDate = new Date(aluno.createdAt || '2026-06-27T12:00:00.000Z');
+    const list = [];
+    for (let i = 1; i <= 12; i++) {
+      const dueDate = new Date(baseDate.getTime() + i * 30 * 24 * 60 * 60 * 1000);
+      const dueDateStr = `${dueDate.getDate().toString().padStart(2, '0')}/${(dueDate.getMonth() + 1).toString().padStart(2, '0')}/${dueDate.getFullYear()}`;
+      list.push({
+        number: i,
+        dueDate,
+        dueDateStr
+      });
+    }
+    return list;
+  };
+
+  const getInstallmentForPeriod = (aluno, monthName, yearStr) => {
+    const list = getStudentInstallments(aluno);
+    const monthNum = monthMap[monthName] || '06';
+    const targetMonthYear = `${monthNum}/${yearStr}`;
+
+    return list.find(inst => {
+      const instMonthYear = `${(inst.dueDate.getMonth() + 1).toString().padStart(2, '0')}/${inst.dueDate.getFullYear()}`;
+      return instMonthYear === targetMonthYear;
+    });
+  };
+
+  const getInstallmentStatus = (aluno, inst) => {
+    if (!inst) return 'A Vencer';
+
+    const savedStatus = localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
+    if (savedStatus) return savedStatus;
+
+    const monthNum = monthNames.indexOf(selectedMonth) + 1;
+    const yearNum = Number(selectedYear);
+    const instMonth = inst.dueDate.getMonth() + 1;
+    const instYear = inst.dueDate.getFullYear();
+
+    // 1. If the installment is in a month prior to the selected period, it is overdue
+    const isPastSelectedPeriod = instYear < yearNum || (instYear === yearNum && instMonth < monthNum);
+    if (isPastSelectedPeriod) {
+      return 'Atrasado';
+    }
+
+    // 2. If it is in the selected period, it is Atrasado if today has passed the due date
+    const today = new Date();
+    if (instYear === yearNum && instMonth === monthNum) {
+      if (today > inst.dueDate) {
+        return 'Atrasado';
+      }
+      return 'Pendente';
+    }
+
+    return 'A Vencer';
+  };
+
+  const today = new Date();
+
+  // 1. Calculate active students (matriculated on or before the selected year)
+  const activeAlunos = alunos.filter(aluno => {
+    const createdYear = new Date(aluno.createdAt || '2026-01-01').getFullYear();
+    return createdYear <= Number(selectedYear);
+  });
+
+  const totalAlunos = activeAlunos.length;
+
+  // 2. Calculate dynamic stats for selected month (overdueCount is cumulative across all months)
+  let paidCount = 0;
+  let pendingCount = 0;
+  let overdueCount = 0;
+
+  activeAlunos.forEach(aluno => {
+    const installments = getStudentInstallments(aluno);
+    installments.forEach(inst => {
+      const status = getInstallmentStatus(aluno, inst);
+      const instMonth = inst.dueDate.getMonth();
+      const instYear = inst.dueDate.getFullYear();
+
+      const targetMonthIndex = monthNames.indexOf(selectedMonth);
+      const targetYearNum = Number(selectedYear);
+      const isCurrentMonth = instMonth === targetMonthIndex && instYear === targetYearNum;
+
+      if (status === 'Pago' && isCurrentMonth) {
+        paidCount++;
+      } else if (status === 'Atrasado') {
+        overdueCount++; // Cumulative across all months
+      } else if (isCurrentMonth) {
+        pendingCount++;
+      }
+    });
+  });
+
+  // 3. Generate 6-month chart data ending with the selectedMonth/selectedYear
+  const generateChartData = () => {
+    const chartDataList = [];
+    const targetMonthIndex = monthNames.indexOf(selectedMonth);
+    const targetYearNum = Number(selectedYear);
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(targetYearNum, targetMonthIndex - i, 1);
+      const mName = monthNames[d.getMonth()];
+      const yStr = d.getFullYear().toString();
+
+      let monthTotal = 0;
+      alunos.forEach(aluno => {
+        const inst = getInstallmentForPeriod(aluno, mName, yStr);
+        if (!inst) return;
+
+        const status = getInstallmentStatus(aluno, inst);
+        if (status === 'Pago') {
+          monthTotal += (aluno.ValorMensalidade || 350.00);
+        }
+      });
+
+      const label = mName.slice(0, 3);
+      chartDataList.push({
+        month: label,
+        fullName: mName,
+        year: yStr,
+        value: monthTotal
+      });
+    }
+    return chartDataList;
+  };
+
+  const chartData = generateChartData();
+
+  // 4. Calculate dynamic SVG rendering points
+  const maxVal = Math.max(...chartData.map(d => d.value), 1000);
+  const yAxisMax = Math.ceil(maxVal * 1.2 / 1000) * 1000;
+
+  const points = chartData.map((d, index) => {
+    const x = 60 + index * 100;
+    const y = 230 - (d.value / yAxisMax) * 200;
+    return { x, y, ...d };
+  });
+
+  const linePath = `M ${points[0].x} ${points[0].y} ` + 
+    points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+
+  const areaPath = `${linePath} L ${points[5].x} 230 L ${points[0].x} 230 Z`;
+
+  const formatYLabel = (val) => {
+    if (val >= 1000) {
+      return (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1) + 'k';
+    }
+    return val.toString();
   };
 
   return (
@@ -87,7 +270,6 @@ function Dashboard() {
               <h2>FastPDF Admin</h2>
               <span>Administração Escolar</span>
             </div>
-            {/* Close button for mobile sidebar */}
             <button 
               className="btn-menu-toggle" 
               style={{ marginLeft: 'auto' }}
@@ -111,16 +293,16 @@ function Dashboard() {
               </Link>
             </li>
             <li>
-              <a href="#financeiro" className="menu-item">
+              <Link to="/financeiro" className="menu-item">
                 <DollarSign size={18} />
                 Financeiro
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#configuracoes" className="menu-item">
+              <Link to="/configuracoes" className="menu-item">
                 <Settings size={18} />
                 Configurações
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -142,7 +324,6 @@ function Dashboard() {
         {/* Top Header */}
         <header className="topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {/* Hamburger menu button for mobile */}
             <button className="btn-menu-toggle" onClick={() => setIsSidebarOpen(true)}>
               <Menu size={24} />
             </button>
@@ -159,17 +340,6 @@ function Dashboard() {
           <div className="topbar-actions">
             <button className="icon-button">
               <Bell size={20} />
-              <span 
-                style={{
-                  position: 'absolute',
-                  top: '2px',
-                  right: '2px',
-                  width: '6px',
-                  height: '6px',
-                  backgroundColor: '#ef4444',
-                  borderRadius: '50%'
-                }}
-              />
             </button>
             <button className="icon-button">
               <HelpCircle size={20} />
@@ -188,15 +358,47 @@ function Dashboard() {
               <h1>Visão Geral</h1>
               <p>Acompanhe a saúde financeira e a gestão de alunos.</p>
             </div>
-            <div className="page-actions">
+            <div className="page-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <button className="btn-action-secondary" onClick={() => navigate('/alunos')}>
                 <Plus size={16} />
                 Novo Aluno
               </button>
-              <button className="btn-action-primary">
+              <button className="btn-action-primary" onClick={() => navigate('/financeiro')}>
                 <Calendar size={16} />
                 Gerar Carnês
               </button>
+
+              <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginLeft: '1rem' }}>Mês Referência:</span>
+              <select
+                className="filter-select"
+                style={{ height: '42px', paddingLeft: '0.75rem', fontWeight: '600' }}
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                <option value="Janeiro">Janeiro</option>
+                <option value="Fevereiro">Fevereiro</option>
+                <option value="Março">Março</option>
+                <option value="Abril">Abril</option>
+                <option value="Maio">Maio</option>
+                <option value="Junho">Junho</option>
+                <option value="Julho">Julho</option>
+                <option value="Agosto">Agosto</option>
+                <option value="Setembro">Setembro</option>
+                <option value="Outubro">Outubro</option>
+                <option value="Novembro">Novembro</option>
+                <option value="Dezembro">Dezembro</option>
+              </select>
+
+              <select
+                className="filter-select"
+                style={{ height: '42px', paddingLeft: '0.75rem', fontWeight: '600' }}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+              </select>
             </div>
           </div>
 
@@ -211,7 +413,7 @@ function Dashboard() {
               </div>
               <div className="metric-card-body">
                 <div className="metric-title">Total de Alunos</div>
-                <div className="metric-value">98</div>
+                <div className="metric-value">{loading ? '...' : totalAlunos}</div>
               </div>
             </div>
 
@@ -225,7 +427,7 @@ function Dashboard() {
               </div>
               <div className="metric-card-body">
                 <div className="metric-title">Parcelas Pagas</div>
-                <div className="metric-value">56</div>
+                <div className="metric-value">{loading ? '...' : paidCount}</div>
               </div>
             </div>
 
@@ -239,7 +441,7 @@ function Dashboard() {
               </div>
               <div className="metric-card-body">
                 <div className="metric-title">Parcelas Pendentes</div>
-                <div className="metric-value">42</div>
+                <div className="metric-value">{loading ? '...' : pendingCount}</div>
               </div>
             </div>
 
@@ -253,7 +455,7 @@ function Dashboard() {
               </div>
               <div className="metric-card-body">
                 <div className="metric-title" style={{ color: 'var(--error)' }}>Parcelas Vencidas</div>
-                <div className="metric-value" style={{ color: 'var(--error)' }}>2</div>
+                <div className="metric-value" style={{ color: 'var(--error)' }}>{loading ? '...' : overdueCount}</div>
               </div>
             </div>
           </div>
@@ -289,37 +491,26 @@ function Dashboard() {
                 <line x1="45" y1="230" x2="580" y2="230" className="chart-grid-line" />
 
                 {/* Y-Axis Labels */}
-                <text x="35" y="34" textAnchor="end" className="chart-axis-text">20k</text>
-                <text x="35" y="84" textAnchor="end" className="chart-axis-text">15k</text>
-                <text x="35" y="134" textAnchor="end" className="chart-axis-text">10k</text>
-                <text x="35" y="184" textAnchor="end" className="chart-axis-text">5k</text>
+                <text x="35" y="34" textAnchor="end" className="chart-axis-text">{formatYLabel(yAxisMax)}</text>
+                <text x="35" y="84" textAnchor="end" className="chart-axis-text">{formatYLabel(yAxisMax * 0.75)}</text>
+                <text x="35" y="134" textAnchor="end" className="chart-axis-text">{formatYLabel(yAxisMax * 0.5)}</text>
+                <text x="35" y="184" textAnchor="end" className="chart-axis-text">{formatYLabel(yAxisMax * 0.25)}</text>
                 <text x="35" y="234" textAnchor="end" className="chart-axis-text">0</text>
 
                 {/* Gradient Area under the spline curve */}
                 <path 
-                  d="M 60 200 
-                     C 100 180, 120 150, 160 150 
-                     C 200 150, 220 170, 260 170 
-                     C 300 170, 320 90, 360 90 
-                     C 400 90, 420 120, 460 120 
-                     C 500 120, 520 60, 560 60
-                     L 560 230 L 60 230 Z" 
+                  d={areaPath}
                   className="chart-area" 
                 />
 
                 {/* The main spline curve path */}
                 <path 
-                  d="M 60 200 
-                     C 100 180, 120 150, 160 150 
-                     C 200 150, 220 170, 260 170 
-                     C 300 170, 320 90, 360 90 
-                     C 400 90, 420 120, 460 120 
-                     C 500 120, 520 60, 560 60" 
+                  d={linePath}
                   className="chart-line" 
                 />
 
                 {/* Circle Datapoints with mouse triggers */}
-                {chartData.map((point, index) => (
+                {points.map((point, index) => (
                   <circle 
                     key={index}
                     cx={point.x} 
@@ -331,12 +522,11 @@ function Dashboard() {
                 ))}
 
                 {/* X-Axis Labels */}
-                <text x="60" y="248" textAnchor="middle" className="chart-axis-text">Jan</text>
-                <text x="160" y="248" textAnchor="middle" className="chart-axis-text">Fev</text>
-                <text x="260" y="248" textAnchor="middle" className="chart-axis-text">Mar</text>
-                <text x="360" y="248" textAnchor="middle" className="chart-axis-text">Abr</text>
-                <text x="460" y="248" textAnchor="middle" className="chart-axis-text">Mai</text>
-                <text x="560" y="248" textAnchor="middle" className="chart-axis-text">Jun</text>
+                {points.map((point, index) => (
+                  <text key={index} x={point.x} y="248" textAnchor="middle" className="chart-axis-text">
+                    {point.month}
+                  </text>
+                ))}
               </svg>
 
               {/* Dynamic Interactive Tooltip */}
@@ -360,7 +550,7 @@ function Dashboard() {
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  <div style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: '400', marginBottom: '0.125rem' }}>{activeTooltip.month}</div>
+                  <div style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: '400', marginBottom: '0.125rem' }}>{activeTooltip.fullName} {activeTooltip.year}</div>
                   <div>R$ {activeTooltip.value.toLocaleString('pt-BR')},00</div>
                 </div>
               )}

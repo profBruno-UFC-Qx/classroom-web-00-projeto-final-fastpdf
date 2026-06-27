@@ -68,7 +68,13 @@ function Alunos() {
     setError('');
     try {
       const data = await alunoService.obterAlunos();
-      setAlunos(data);
+      const currentUser = authService.getCurrentUser();
+      if (currentUser?.escola?.id) {
+        const filtered = data.filter(aluno => aluno.escola?.id === currentUser.escola.id);
+        setAlunos(filtered);
+      } else {
+        setAlunos(data);
+      }
     } catch (err) {
       console.error(err);
       setError('Falha ao carregar alunos do Strapi. Certifique-se de que o backend está ativo.');
@@ -317,6 +323,11 @@ function Alunos() {
             ValorMensalidade: valorDecimal
           };
 
+          const currentUser = authService.getCurrentUser();
+          if (currentUser?.escola?.id) {
+            payload.escola = currentUser.escola.id;
+          }
+
           try {
             await alunoService.cadastrarAluno(payload);
             successCount++;
@@ -387,6 +398,12 @@ function Alunos() {
           ValorMensalidade: valorDecimal,
           Ativo: isAtivo
         };
+
+        const currentUser = authService.getCurrentUser();
+        if (currentUser?.escola?.id) {
+          payload.escola = currentUser.escola.id;
+        }
+
         await alunoService.cadastrarAluno(payload);
       }
 
@@ -493,38 +510,46 @@ function Alunos() {
           </div>
 
           <ul className="sidebar-menu">
+            {user?.cargo !== 'secretaria' && (
+              <li>
+                <Link to="/dashboard" className="menu-item">
+                  <LayoutDashboard size={18} />
+                  Dashboard
+                </Link>
+              </li>
+            )}
             <li>
-              <Link to="/dashboard" className="menu-item">
-                <LayoutDashboard size={18} />
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <a href="#alunos" className="menu-item active">
+              <Link to="/alunos" className="menu-item active">
                 <Users size={18} />
                 Alunos
-              </a>
+              </Link>
             </li>
-            <li>
-              <a href="#financeiro" className="menu-item">
-                <DollarSign size={18} />
-                Financeiro
-              </a>
-            </li>
-            <li>
-              <a href="#configuracoes" className="menu-item">
-                <Settings size={18} />
-                Configurações
-              </a>
-            </li>
+            {user?.cargo !== 'secretaria' && (
+              <li>
+                <Link to="/financeiro" className="menu-item">
+                  <DollarSign size={18} />
+                  Financeiro
+                </Link>
+              </li>
+            )}
+            {user?.cargo !== 'secretaria' && (
+              <li>
+                <Link to="/configuracoes" className="menu-item">
+                  <Settings size={18} />
+                  Configurações
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
         <div className="sidebar-bottom">
-          <button className="btn-sidebar-action">
-            <FileText size={16} />
-            Gerar PDF
-          </button>
+          {user?.cargo !== 'secretaria' && (
+            <button className="btn-sidebar-action">
+              <FileText size={16} />
+              Gerar PDF
+            </button>
+          )}
           <button className="menu-item-logout" onClick={handleLogout}>
             <LogOut size={18} />
             Sair
@@ -709,7 +734,7 @@ function Alunos() {
                       <th>Responsável</th>
                       <th>Turma</th>
                       <th>Status</th>
-                      <th style={{ width: '80px', textAlign: 'center' }}>Ações</th>
+                      {user?.cargo !== 'secretaria' && <th style={{ width: '80px', textAlign: 'center' }}>Ações</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -740,23 +765,25 @@ function Alunos() {
                               {aluno.Ativo !== false ? 'ATIVO' : 'INATIVO'}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div className="actions-dropdown-container">
-                              <button 
-                                className="icon-button" 
-                                style={{ margin: '0 auto' }}
-                                onClick={(e) => { e.stopPropagation(); setActiveMenuStudentId(activeMenuStudentId === id ? null : id); }}
-                              >
-                                <MoreVertical size={18} />
-                              </button>
-                              {activeMenuStudentId === id && (
-                                <div className="actions-dropdown-menu">
-                                  <button type="button" onClick={() => handleEditClick(aluno)}>Editar</button>
-                                  <button type="button" className="delete-option" onClick={() => handleOpenDeleteModal(aluno)}>Excluir</button>
-                                </div>
-                              )}
-                            </div>
-                          </td>
+                          {user?.cargo !== 'secretaria' && (
+                            <td style={{ textAlign: 'center' }}>
+                              <div className="actions-dropdown-container">
+                                <button 
+                                  className="icon-button" 
+                                  style={{ margin: '0 auto' }}
+                                  onClick={(e) => { e.stopPropagation(); setActiveMenuStudentId(activeMenuStudentId === id ? null : id); }}
+                                >
+                                  <MoreVertical size={18} />
+                                </button>
+                                {activeMenuStudentId === id && (
+                                  <div className="actions-dropdown-menu">
+                                    <button type="button" onClick={() => handleEditClick(aluno)}>Editar</button>
+                                    <button type="button" className="delete-option" onClick={() => handleOpenDeleteModal(aluno)}>Excluir</button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       );
                     })}

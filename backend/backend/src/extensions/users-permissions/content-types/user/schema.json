@@ -71,6 +71,10 @@
       "relation": "oneToOne",
       "target": "api::escola.escola",
       "inversedBy": "user"
+    },
+    "cargo": {
+      "type": "string",
+      "default": "admin"
     }
   }
 }
