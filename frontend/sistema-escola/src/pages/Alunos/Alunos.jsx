@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import {
   LayoutDashboard,
   Users,
@@ -54,6 +55,125 @@ function Alunos() {
   const [studentToDeleteId, setStudentToDeleteId] = useState(null);
   const [studentToDeleteName, setStudentToDeleteName] = useState('');
   const [deleteSaving, setDeleteSaving] = useState(false);
+
+  const handleGerarPDF = () => {
+  const doc = new jsPDF();
+  const dataHoje = new Date().toLocaleDateString('pt-BR');
+  const totalAtivos = alunos.filter(a => a.Ativo !== false).length;
+  const totalInativos = alunos.filter(a => a.Ativo === false).length;
+
+  doc.setFillColor(11, 44, 82);
+  doc.rect(0, 0, 210, 28, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FastPDF Admin', 14, 12);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Escola Municipal São José', 14, 20);
+
+  doc.setFontSize(9);
+  doc.text(`Data de emissão: ${dataHoje}`, 196, 12, { align: 'right' });
+  doc.text(`Gerado por: ${user?.email || 'gestor'}`, 196, 20, { align: 'right' });
+
+  doc.setTextColor(11, 44, 82);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Lista de Alunos', 14, 42);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('Relatório completo de alunos matriculados na instituição.', 14, 50);
+
+  const cards = [
+    { label: 'Total de alunos', valor: String(alunos.length) },
+    { label: 'Ativos', valor: String(totalAtivos) },
+    { label: 'Inativos', valor: String(totalInativos) },
+  ];
+
+  cards.forEach((card, i) => {
+    const x = 14 + i * 62;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(x, 58, 58, 22, 2, 2, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(x, 58, 58, 22, 2, 2, 'S');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(card.label, x + 4, 65);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(11, 44, 82);
+    doc.text(card.valor, x + 4, 75);
+    doc.setFont('helvetica', 'normal');
+  });
+
+  doc.setFillColor(11, 44, 82);
+  doc.rect(14, 88, 182, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('NOME DO ALUNO', 18, 93.5);
+  doc.text('MATRÍCULA', 90, 93.5);
+  doc.text('TURMA', 135, 93.5);
+  doc.text('STATUS', 170, 93.5);
+
+  let y = 96;
+  const alunosOrdenados = [...alunos].sort((a, b) => {
+  const nomeA = a.NomeCrianca || '';
+  const nomeB = b.NomeCrianca || '';
+  return nomeA.localeCompare(nomeB, 'pt-BR');
+});
+  alunosOrdenados.forEach((aluno, index) => {
+    if (y > 265) {
+      doc.addPage();
+      y = 20;
+    }
+
+    y += 9;
+
+    if (index % 2 === 0) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(14, y - 6, 182, 9, 'F');
+    }
+
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, y + 3, 196, y + 3);
+
+    doc.setTextColor(30, 41, 59);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(aluno.NomeCrianca || '-', 18, y);
+    doc.text(aluno.Matricula || '-', 90, y);
+    doc.text(aluno.SerieCursada || '-', 135, y);
+
+    const ativo = aluno.Ativo !== false;
+    if (ativo) {
+      doc.setFillColor(220, 252, 231);
+      doc.roundedRect(168, y - 5, 20, 6, 1, 1, 'F');
+      doc.setTextColor(21, 128, 61);
+    } else {
+      doc.setFillColor(254, 226, 226);
+      doc.roundedRect(168, y - 5, 20, 6, 1, 1, 'F');
+      doc.setTextColor(185, 28, 28);
+    }
+    doc.setFontSize(8);
+    doc.text(ativo ? 'Ativo' : 'Inativo', 178, y, { align: 'center' });
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, 282, 196, 282);
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text('FastPDF Admin — Sistema de Gestão Escolar', 14, 287);
+    doc.text(`Página ${i} de ${pageCount}`, 196, 287, { align: 'right' });
+  }
+
+  doc.save('lista-alunos.pdf');
+};
 
   const carregarAlunos = async () => {
     setLoading(true);
@@ -426,7 +546,7 @@ function Alunos() {
           </ul>
         </div>
         <div className="sidebar-bottom">
-          {user?.cargo !== 'secretaria' && (<button className="btn-sidebar-action"><FileText size={16} />Gerar PDF</button>)}
+          {user?.cargo !== 'secretaria' && (<button className="btn-sidebar-action" onClick={handleGerarPDF}><FileText size={16} />Gerar PDF</button>)}
           <button className="menu-item-logout" onClick={handleLogout}><LogOut size={18} />Sair</button>
         </div>
       </aside>
@@ -632,5 +752,4 @@ function Alunos() {
     </div>
   );
 }
-
 export default Alunos;
