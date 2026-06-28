@@ -61,6 +61,9 @@ function Configuracoes() {
         const cachedUser = authService.getCurrentUser();
         if (!cachedUser?.id) return;
 
+        //p n perder quando atualizar
+        if (cachedUser?.escola?.id) {carregarSecretarias(cachedUser.escola.id); }
+
         // Fetch fresh populated user profile from backend
         let freshUser = await authService.obterPerfil(cachedUser.id);
         

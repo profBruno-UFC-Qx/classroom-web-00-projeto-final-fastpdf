@@ -79,33 +79,42 @@ export const authService = {
     }
   },
 
-  async criarSecretaria(username, email, password, escolaId) {
-    try {
-      const response = await api.post('/users', {
-        username,
-        email,
-        password,
-        escola: escolaId,
-        cargo: 'secretaria',
-        confirmed: true,
-        role: 1
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error creating secretary:', error);
-      throw error.response?.data?.error || new Error('Ocorreu um erro ao criar a secretaria');
-    }
-  },
+async criarSecretaria(username, email, password, escolaId) {
+  try {
+    const response = await api.post('/users', {
+      username,
+      email,
+      password,
+      cargo: 'secretaria',
+      confirmed: true,
+      role: 1
+    });
 
-  async listarSecretarias(escolaId) {
-    try {
-      const response = await api.get(`/users?filters[escola][id][$eq]=${escolaId}&filters[cargo][$eq]=secretaria`);
-      return response.data;
-    } catch (error) {
-      console.error('Error listing secretaries:', error);
-      throw error.response?.data?.error || new Error('Ocorreu um erro ao listar as secretarias');
-    }
-  },
+    const novoUserId = response.data.id;
+
+    // 2. Atualiza com a escola separadamente
+    const putResponse = await api.put(`/users/${novoUserId}`, {
+      escola: Number(escolaId)
+    });
+    
+    console.log('PUT escola response:', putResponse.data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error creating secretary:', error);
+    throw error.response?.data?.error || new Error('Ocorreu um erro ao criar a secretaria');
+  }
+},
+
+async listarSecretarias(escolaId) {
+  try {
+    const response = await api.get(`/users?filters[cargo][$eq]=secretaria`);
+    return response.data;
+  } catch (error) {
+    console.error('Error listing secretaries:', error);
+    throw error.response?.data?.error || new Error('Ocorreu um erro ao listar as secretarias');
+  }
+},
 
   async deletarSecretaria(id) {
     try {
