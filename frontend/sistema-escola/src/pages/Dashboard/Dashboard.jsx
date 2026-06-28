@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   FileText,
   Calendar,
-  MoreVertical
+  MoreVertical,
+  Camera,
+  Lock
 } from 'lucide-react';
 import { authService } from '../../services/auth';
 import { alunoService } from '../../services/aluno';
@@ -28,6 +30,10 @@ function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const profileMenuRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +45,10 @@ function Dashboard() {
     }
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
+
+    // Carrega foto salva no localStorage
+    const savedPhoto = localStorage.getItem(`profile_photo_${currentUser?.email}`);
+    if (savedPhoto) setProfilePhoto(savedPhoto);
 
     const carregarDados = async () => {
       try {
@@ -58,6 +68,17 @@ function Dashboard() {
     carregarDados();
   }, [navigate]);
 
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
@@ -67,6 +88,19 @@ function Dashboard() {
     if (user?.username) return user.username.charAt(0).toUpperCase();
     if (user?.email) return user.email.charAt(0).toUpperCase();
     return 'A';
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target.result;
+      setProfilePhoto(base64);
+      localStorage.setItem(`profile_photo_${user?.email}`, base64);
+    };
+    reader.readAsDataURL(file);
+    setIsProfileMenuOpen(false);
   };
 
   const monthNames = [
@@ -179,7 +213,6 @@ function Dashboard() {
       alunos.forEach(aluno => {
         const inst = getInstallmentForPeriod(aluno, mName, yStr);
         if (!inst) return;
-
         const savedStatus = aluno.HistoricoPagamentos?.[String(inst.number)];
         if (savedStatus === 'Pago') {
           monthTotal += (aluno.ValorMensalidade || 0);
@@ -193,7 +226,6 @@ function Dashboard() {
   };
 
   const chartData = generateChartData();
-
   const maxVal = Math.max(...chartData.map(d => d.value), 1000);
   const yAxisMax = Math.ceil(maxVal * 1.2 / 1000) * 1000;
 
@@ -258,8 +290,108 @@ function Dashboard() {
               <input type="text" className="search-input" placeholder="Buscar alunos, carnês..." />
             </div>
           </div>
+
           <div className="topbar-actions">
-            <div className="profile-avatar">{getUserInitial()}</div>
+            {/* Input oculto para upload de foto */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handlePhotoChange}
+            />
+
+            {/* Avatar com dropdown */}
+            <div style={{ position: 'relative' }} ref={profileMenuRef}>
+              <div
+                className="profile-avatar"
+                onClick={() => setIsProfileMenuOpen(prev => !prev)}
+                style={{ cursor: 'pointer', overflow: 'hidden' }}
+              >
+                {profilePhoto ? (
+                  <img src={profilePhoto} alt="Foto de perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                ) : (
+                  getUserInitial()
+                )}
+              </div>
+
+              {isProfileMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  right: 0,
+                  backgroundColor: 'var(--white)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  boxShadow: 'var(--shadow-lg)',
+                  minWidth: '200px',
+                  zIndex: 200,
+                  overflow: 'hidden'
+                }}>
+                  {/* Cabeçalho do menu */}
+                  <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-light)' }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Logado como</p>
+                    <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  {/* Opção: Alterar foto */}
+                  <button
+                    onClick={() => { fileInputRef.current.click(); setIsProfileMenuOpen(false); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      width: '100%', padding: '0.75rem 1rem',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '0.875rem', color: 'var(--text-dark)',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-light)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Camera size={16} style={{ color: 'var(--text-muted)' }} />
+                    Alterar foto
+                  </button>
+
+                  {/* Opção: Alterar senha */}
+                  <button
+                    onClick={() => { navigate('/recuperar-senha'); setIsProfileMenuOpen(false); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      width: '100%', padding: '0.75rem 1rem',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '0.875rem', color: 'var(--text-dark)',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-light)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Lock size={16} style={{ color: 'var(--text-muted)' }} />
+                    Alterar senha
+                  </button>
+
+                  {/* Divisor */}
+                  <div style={{ borderTop: '1px solid var(--border)' }} />
+
+                  {/* Opção: Sair */}
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      width: '100%', padding: '0.75rem 1rem',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '0.875rem', color: '#ef4444',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fff5f5'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <LogOut size={16} />
+                    Sair
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
