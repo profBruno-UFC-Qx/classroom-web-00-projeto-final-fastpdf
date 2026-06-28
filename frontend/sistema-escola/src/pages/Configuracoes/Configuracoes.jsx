@@ -572,8 +572,7 @@ function Configuracoes() {
                             <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
                               {deleteConfirmId === sec.id ? (
                                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                  <button onClick={() => handleDeleteSecretary(sec.id)} style={{ border: 'none', background: 'var(--error)', color: 'var(--white)', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '600', cursor: 'pointer' }}>Confirmar</button>
-                                  <button onClick={() => setDeleteConfirmId(null)} style={{ border: '1px solid #cbd5e1', background: 'none', color: '#64748b', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}>Voltar</button>
+<button onClick={() => handleDeleteSecretary(sec.id)} style={{ border: 'none', background: '#22c55e', color: 'var(--white)', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '600', cursor: 'pointer' }}>Confirmar</button>                                  <button onClick={() => setDeleteConfirmId(null)} style={{ border: '1px solid #cbd5e1', background: 'none', color: '#64748b', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}>Voltar</button>
                                 </div>
                               ) : (
                                 <button
