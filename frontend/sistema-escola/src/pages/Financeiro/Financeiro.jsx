@@ -319,7 +319,7 @@ function Financeiro() {
           </ul>
         </div>
         <div className="sidebar-bottom">
-          <button className="btn-sidebar-action"><FileText size={16} />Gerar PDF</button>
+          {/* <button className="btn-sidebar-action"><FileText size={16} />Gerar PDF</button> */}
           <button className="menu-item-logout" onClick={handleLogout}><LogOut size={18} />Sair</button>
         </div>
       </aside>

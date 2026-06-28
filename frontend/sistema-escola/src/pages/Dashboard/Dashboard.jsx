@@ -438,7 +438,6 @@ function Dashboard() {
           <div className="chart-card">
             <div className="chart-card-header">
               <div className="chart-card-title"><h3>Visão financeira</h3><p>Recebimentos dos últimos 6 meses</p></div>
-              <button className="icon-button"><MoreVertical size={20} /></button>
             </div>
 
             <div className="chart-wrapper">

@@ -295,10 +295,10 @@ function Configuracoes() {
         </div>
 
         <div className="sidebar-bottom">
-          <button className="btn-sidebar-action" onClick={() => navigate('/financeiro')}>
+          {/* <button className="btn-sidebar-action" onClick={() => navigate('/financeiro')}>
             <FileText size={16} />
             Gerar PDF
-          </button>
+          </button> */}
           <button className="menu-item-logout" onClick={handleLogout}>
             <LogOut size={18} />
             Sair
