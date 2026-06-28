@@ -10,8 +10,8 @@ import Configuracoes from './pages/Configuracoes/Configuracoes';
 import ResponsavelDashboard from './pages/Responsavel/ResponsavelDashboard';
 import { authService } from './services/auth';
 import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
+import LandingPage from './pages/LandingPage/LandingPage';
 
-// Protected route to enforce authentication and cargo roles
 const ProtectedRoute = ({ children, allowedCargos }) => {
   if (!authService.isAuthenticated()) {
     return <Navigate to="/login" replace />;
@@ -34,29 +34,29 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro-escola" element={<CadastroEscola />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-        
+
         <Route path="/dashboard" element={
           <ProtectedRoute allowedCargos={['admin']}>
             <Dashboard />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/alunos" element={
           <ProtectedRoute allowedCargos={['admin', 'secretaria']}>
             <Alunos />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/financeiro" element={
           <ProtectedRoute allowedCargos={['admin']}>
             <Financeiro />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/print-carne" element={
           <ProtectedRoute allowedCargos={['admin']}>
             <CarnePrint />
