@@ -154,7 +154,6 @@ function Financeiro() {
     });
   };
 
-  // Helper to determine status based on 30 days interval since creation date (evaluated relative to selected month/year)
   const getInstallmentStatus = (aluno, inst) => {
     if (!inst) return 'A Vencer';
 
@@ -166,13 +165,11 @@ function Financeiro() {
     const instMonth = inst.dueDate.getMonth() + 1;
     const instYear = inst.dueDate.getFullYear();
 
-    // 1. If the installment is in a month prior to the selected period, it is overdue
     const isPastSelectedPeriod = instYear < yearNum || (instYear === yearNum && instMonth < monthNum);
     if (isPastSelectedPeriod) {
       return 'Atrasado';
     }
 
-    // 2. If it is in the selected period, it is Atrasado if today has passed the due date
     const today = new Date();
     if (instYear === yearNum && instMonth === monthNum) {
       if (today > inst.dueDate) {
@@ -194,6 +191,7 @@ function Financeiro() {
     });
   };
 
+  // FIX: usa documentId || id para compatibilidade com Strapi v4/v5
   const handleMarkAsPaid = async (aluno) => {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
@@ -203,8 +201,7 @@ function Financeiro() {
           ...currentHist,
           [inst.number]: 'Pago'
         };
-        await alunoService.atualizarAluno(aluno.id, { HistoricoPagamentos: novoHistorico });
-        // Update local object property so changes are reflected in local state
+        await alunoService.atualizarAluno(aluno.documentId || aluno.id, { HistoricoPagamentos: novoHistorico });
         aluno.HistoricoPagamentos = novoHistorico;
         setUpdateTrigger(prev => prev + 1);
       } catch (err) {
@@ -214,6 +211,7 @@ function Financeiro() {
     }
   };
 
+  // FIX: usa documentId || id para compatibilidade com Strapi v4/v5
   const handleUnmarkPaid = async (aluno) => {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
@@ -223,8 +221,7 @@ function Financeiro() {
           ...currentHist,
           [inst.number]: 'Pendente'
         };
-        await alunoService.atualizarAluno(aluno.id, { HistoricoPagamentos: novoHistorico });
-        // Update local object property so changes are reflected in local state
+        await alunoService.atualizarAluno(aluno.documentId || aluno.id, { HistoricoPagamentos: novoHistorico });
         aluno.HistoricoPagamentos = novoHistorico;
         setUpdateTrigger(prev => prev + 1);
       } catch (err) {
@@ -234,27 +231,21 @@ function Financeiro() {
     }
   };
 
-  // Open PDF settings modal
   const handleOpenPdfModal = (aluno) => {
     setSelectedStudentForPdf(aluno);
     setIsPdfModalOpen(true);
   };
 
-  // Generate 12-month slips print view
   const handleGeneratePdf = (e) => {
     e.preventDefault();
     if (!selectedStudentForPdf) return;
     localStorage.setItem('admin_pix_key', pixKey);
     setIsPdfModalOpen(false);
-    
-    // Open new print window
     const printUrl = `/print-carne?id=${selectedStudentForPdf.id}&pix=${encodeURIComponent(pixKey)}`;
     window.open(printUrl, '_blank');
   };
 
-  // Filter students based on left panel search (displays all students registered in/before the selected year)
   const filteredAlunosLeft = alunos.filter(aluno => {
-    // Check registration/creation year (Strapi sets createdAt automatically)
     const createdYear = new Date(aluno.createdAt || '2026-01-01').getFullYear();
     if (createdYear > Number(selectedYear)) return false;
 
@@ -264,7 +255,6 @@ function Financeiro() {
            serie.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  // Filter students for the right panel installment table (only displays students with an active installment due this month)
   const activeInstallmentsList = alunos.filter(aluno => {
     const createdYear = new Date(aluno.createdAt || '2026-01-01').getFullYear();
     if (createdYear > Number(selectedYear)) return false;
@@ -279,14 +269,12 @@ function Financeiro() {
     return inst !== undefined;
   });
 
-  // Calculate statistics dynamically (overdue is cumulative)
   const calculateStats = () => {
     let totalReceived = 0;
     let totalToReceive = 0;
     let totalOverdue = 0;
 
     alunos.forEach(aluno => {
-      // Check registration/creation year
       const createdYear = new Date(aluno.createdAt || '2026-01-01').getFullYear();
       if (createdYear > Number(selectedYear)) return;
 
@@ -298,7 +286,6 @@ function Financeiro() {
         const instMonth = inst.dueDate.getMonth() + 1;
         const instYear = inst.dueDate.getFullYear();
 
-        // Check if this installment's due date is in or before the selected period
         const isBeforeOrEqual = instYear < yearNum || (instYear === yearNum && instMonth <= monthNum);
         if (!isBeforeOrEqual) return;
 
@@ -308,7 +295,7 @@ function Financeiro() {
         if (status === 'Pago') {
           totalReceived += value;
         } else if (status === 'Atrasado') {
-          totalOverdue += value; // Accumulates all past and current overdue installments!
+          totalOverdue += value;
         } else if (instYear === yearNum && instMonth === monthNum) {
           totalToReceive += value;
         }
@@ -324,7 +311,6 @@ function Financeiro() {
 
   const stats = calculateStats();
 
-  // Installment Table Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentInstallments = activeInstallmentsList.slice(indexOfFirstItem, indexOfLastItem);
@@ -332,7 +318,6 @@ function Financeiro() {
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar background overlay on mobile */}
       {isSidebarOpen && (
         <div
           style={{
@@ -348,7 +333,6 @@ function Financeiro() {
         />
       )}
 
-      {/* Sidebar Navigation */}
       <aside className={`sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-top">
           <div className="sidebar-logo">
@@ -408,9 +392,7 @@ function Financeiro() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main className="main-content">
-        {/* Top Header */}
         <header className="topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button className="btn-menu-toggle" onClick={() => setIsSidebarOpen(true)}>
@@ -435,9 +417,7 @@ function Financeiro() {
           </div>
         </header>
 
-        {/* Content Body */}
         <div className="page-body">
-          {/* Section Header */}
           <div className="page-header-row" style={{ marginBottom: '2rem' }}>
             <div className="page-title">
               <h1>Gestão Financeira</h1>
@@ -485,9 +465,8 @@ function Financeiro() {
             </div>
           )}
 
-          {/* Grid Layout containing Left and Right column */}
           <div className="financeiro-grid">
-            
+
             {/* COLUMN LEFT: Carnês por Aluno */}
             <div className="carnes-aluno-card">
               <div className="carnes-aluno-header">
@@ -654,7 +633,6 @@ function Financeiro() {
                   )}
                 </div>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="pagination-row">
                     <button
@@ -723,7 +701,9 @@ function Financeiro() {
                 <div style={{ backgroundColor: 'var(--bg-light)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Aluno selecionado:</p>
                   <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--primary)' }}>{selectedStudentForPdf.NomeCrianca}</h4>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Matrícula: {selectedStudentForPdf.Matricula || 'N/A'} | Mensalidade: {(selectedStudentForPdf.ValorMensalidade || 350.00).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Matrícula: {selectedStudentForPdf.Matricula || 'N/A'} | Mensalidade: {(selectedStudentForPdf.ValorMensalidade || 350.00).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
                 </div>
 
                 <div className="form-group">
