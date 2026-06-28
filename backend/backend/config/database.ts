@@ -47,6 +47,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
       connection: {
         filename: path.join(__dirname, '..', '..', env('DATABASE_FILENAME', '.tmp/data.db')),
       },
+      pool: { min: 1, max: 1 },
       useNullAsDefault: true,
     },
   };
