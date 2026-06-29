@@ -18,7 +18,9 @@ import {
   AlertTriangle,
   Download,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Camera,
+  Lock
 } from 'lucide-react';
 import { alunoService } from '../../services/aluno';
 import { authService } from '../../services/auth';
@@ -27,9 +29,13 @@ import './Alunos.css';
 function Alunos() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const profileMenuRef = useRef(null);
+  const photoInputRef = useRef(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -200,9 +206,23 @@ function Alunos() {
       navigate('/login');
       return;
     }
-    setUser(authService.getCurrentUser());
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+    const savedPhoto = localStorage.getItem(`profile_photo_${currentUser?.email}`);
+    if (savedPhoto) setProfilePhoto(savedPhoto);
     carregarAlunos();
   }, [navigate]);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     authService.logout();
@@ -213,6 +233,19 @@ function Alunos() {
     if (user?.username) return user.username.charAt(0).toUpperCase();
     if (user?.email) return user.email.charAt(0).toUpperCase();
     return 'A';
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target.result;
+      setProfilePhoto(base64);
+      localStorage.setItem(`profile_photo_${user?.email}`, base64);
+    };
+    reader.readAsDataURL(file);
+    setIsProfileMenuOpen(false);
   };
 
   const handlePhoneChange = (e) => {
@@ -560,8 +593,85 @@ function Alunos() {
               <input type="text" className="search-input" placeholder="Buscar alunos, turmas..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
             </div>
           </div>
+
           <div className="topbar-actions">
-            <div className="profile-avatar">{getUserInitial()}</div>
+            {/* Input oculto para upload de foto */}
+            <input
+              type="file"
+              ref={photoInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handlePhotoChange}
+            />
+
+            {/* Avatar com dropdown */}
+            <div style={{ position: 'relative' }} ref={profileMenuRef}>
+              <div
+                className="profile-avatar"
+                onClick={() => setIsProfileMenuOpen(prev => !prev)}
+                style={{ cursor: 'pointer', overflow: 'hidden' }}
+              >
+                {profilePhoto ? (
+                  <img src={profilePhoto} alt="Foto de perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                ) : (
+                  getUserInitial()
+                )}
+              </div>
+
+              {isProfileMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  right: 0,
+                  backgroundColor: 'var(--white)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  boxShadow: 'var(--shadow-lg)',
+                  minWidth: '200px',
+                  zIndex: 200,
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-light)' }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Logado como</p>
+                    <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => { photoInputRef.current.click(); setIsProfileMenuOpen(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-dark)', textAlign: 'left' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-light)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Camera size={16} style={{ color: 'var(--text-muted)' }} />
+                    Alterar foto
+                  </button>
+
+                  <button
+                    onClick={() => { navigate('/recuperar-senha'); setIsProfileMenuOpen(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-dark)', textAlign: 'left' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-light)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <Lock size={16} style={{ color: 'var(--text-muted)' }} />
+                    Alterar senha
+                  </button>
+
+                  <div style={{ borderTop: '1px solid var(--border)' }} />
+
+                  <button
+                    onClick={handleLogout}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: '#ef4444', textAlign: 'left' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fff5f5'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <LogOut size={16} />
+                    Sair
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

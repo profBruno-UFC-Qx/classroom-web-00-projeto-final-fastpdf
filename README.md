@@ -85,3 +85,7 @@ Gestores de centros de reforço escolar, microempreendedores da área educaciona
 | **GET** | `/api/carnes` | Recuperação de dados para geração de PDF |
 | **PUT** | `/api/parcelas/:id` | Alteração de status (Ex: de 'Pendente' para 'Pago') |
 | **GET** | `/api/users/me` | Verificação de perfil e permissões do usuário logado |
+
+FORMA DE USO:
+LOGIN: Primeiro faz o cadastro e depois o login, que leva pra tela de dashboard
+RESPONSÁVEL: Utiliza o email de cadastro do aluno e a senha é a matrícula dele, que fica logo em baixo do nome do aluno na tela de dashboard, e depois de logado, ele pode ver os carnês dos alunos vinculados a ele.
