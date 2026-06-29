@@ -89,3 +89,32 @@ Gestores de centros de reforço escolar, microempreendedores da área educaciona
 FORMA DE USO:
 LOGIN: Primeiro faz o cadastro e depois o login, que leva pra tela de dashboard
 RESPONSÁVEL: Utiliza o email de cadastro do aluno e a senha é a matrícula dele, que fica logo em baixo do nome do aluno na tela de dashboard, e depois de logado, ele pode ver os carnês dos alunos vinculados a ele.
+
+## Como rodar o projeto localmente
+
+### Pré-requisitos
+- Node.js instalado
+- Git instalado
+
+### 1. Clonar o repositório
+git clone https://github.com/profBruno-UFC-Qx/classroom-web-00-projeto-final-fastpdf.git
+
+### 2. Rodar o Backend (Strapi)
+Abra um terminal PowerShell e execute:
+
+cd classroom-web-00-projeto-final-fastpdf\backend\backend
+npm install
+npm run develop
+
+
+### 3. Rodar o Frontend
+Abra outro terminal PowerShell e execute:
+
+cd classroom-web-00-projeto-final-fastpdf\frontend\sistema-escola
+npm install
+npm run dev
+
+### Possivel impasse no envio de informações do login de responável
+
+Talvez seja necessário reiniciar o banco de dados dando Ctrl + C, utilizando novamente o comando de reiniciar o backend e dando um refresh na página. 
+Isso ocorreu devido ao uso do SQL lite que é um pouco mais limitado. 
