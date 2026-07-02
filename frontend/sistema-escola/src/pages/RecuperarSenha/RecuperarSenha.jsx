@@ -32,7 +32,8 @@ function RecuperarSenha() {
     setIsLoading(true);
 
     try {
-      await api.post('/auth/forgot-password', { email });
+      // ROTA CUSTOMIZADA: gera uma senha nova e envia por e-mail
+      await api.post('/recuperar-senha', { email });
       setSuccess(true);
     } catch (err) {
       console.error('Erro ao recuperar senha:', err);
@@ -47,9 +48,9 @@ function RecuperarSenha() {
       <div className="recuperar-container fade-in" style={{ justifyContent: 'center', alignItems: 'center' }}>
         <div className="success-card">
           <CheckCircle className="success-icon" size={64} />
-          <h2>E-mail enviado!</h2>
+          <h2>Nova senha enviada!</h2>
           <p>
-            Enviamos um link de redefinição para <strong>{email}</strong>. Verifique sua caixa de entrada.
+            Enviamos uma nova senha de acesso para <strong>{email}</strong>. Verifique sua caixa de entrada (e o spam) e use-a para entrar.
           </p>
           <Link to="/login" className="btn-secondary">
             ← Voltar para login
@@ -65,7 +66,7 @@ function RecuperarSenha() {
         <div className="recuperar-left-content">
           <h1>Não se preocupe, acontece com todos.</h1>
           <p>
-            Informe seu e-mail cadastrado e enviaremos um link para você redefinir sua senha com segurança.
+            Informe seu e-mail cadastrado e enviaremos uma nova senha de acesso.
           </p>
         </div>
       </div>
@@ -74,7 +75,7 @@ function RecuperarSenha() {
         <div className="recuperar-right-content">
           <div className="recuperar-header">
             <h2>Recuperar Senha</h2>
-            <p>Digite seu e-mail para receber o link de redefinição.</p>
+            <p>Digite seu e-mail para receber uma nova senha.</p>
           </div>
 
           {error && (
@@ -103,7 +104,7 @@ function RecuperarSenha() {
             </div>
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? 'Enviando...' : 'Enviar link'}
+              {isLoading ? 'Enviando...' : 'Enviar nova senha'}
               {!isLoading && <ArrowRight className="arrow-icon" size={18} />}
             </button>
           </form>
