@@ -1,10 +1,7 @@
 import api from './api';
 
 export const alunoService = {
-  /**
-   * Fetch all students from Strapi
-   * @returns {Promise<Array>} List of students
-   */
+ 
   async obterAlunos() {
     try {
       const response = await api.get('/alunos?populate=*');
@@ -16,11 +13,6 @@ export const alunoService = {
     }
   },
 
-  /**
-   * Register a new student in Strapi
-   * @param {object} dadosAluno - Student data matching backend capitalization
-   * @returns {Promise<object>} The registered student data
-   */
   async cadastrarAluno(dadosAluno) {
     try {
       // Strapi v4/v5 expects POST payload wrapped in a "data" object
@@ -34,12 +26,6 @@ export const alunoService = {
     }
   },
 
-  /**
-   * Update student details in Strapi
-   * @param {number|string} id - Student ID
-   * @param {object} dadosAluno - Student data
-   * @returns {Promise<object>} The updated data
-   */
   async atualizarAluno(id, dadosAluno) {
     try {
       const response = await api.put(`/alunos/${id}`, {
@@ -52,11 +38,6 @@ export const alunoService = {
     }
   },
 
-  /**
-   * Delete student from Strapi
-   * @param {number|string} id - Student ID
-   * @returns {Promise<object>} Response confirmation
-   */
   async deletarAluno(id) {
     try {
       const response = await api.delete(`/alunos/${id}`);
