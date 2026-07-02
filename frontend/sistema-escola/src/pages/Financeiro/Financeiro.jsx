@@ -24,12 +24,28 @@ import {
 } from 'lucide-react';
 import { alunoService } from '../../services/aluno';
 import { authService } from '../../services/auth';
+import { financeiroService } from '../../services/financeiro';
 import './Financeiro.css';
 
 function Financeiro() {
   const navigate = useNavigate();
   const profileMenuRef = useRef(null);
   const photoInputRef = useRef(null);
+
+  const formatarData = (dataStr) => {
+    if (!dataStr) return 'N/A';
+    if (dataStr.includes('-')) {
+      const parts = dataStr.split('T')[0].split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    }
+    const d = new Date(dataStr);
+    const dia = d.getDate().toString().padStart(2, '0');
+    const mes = (d.getMonth() + 1).toString().padStart(2, '0');
+    const ano = d.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -159,40 +175,36 @@ function Financeiro() {
   };
 
   const getInstallmentForPeriod = (aluno, monthName, yearStr) => {
-    const list = getStudentInstallments(aluno);
-    const monthNum = monthMap[monthName] || '06';
-    const targetMonthYear = `${monthNum}/${yearStr}`;
-    return list.find(inst => {
-      const instMonthYear = `${(inst.dueDate.getMonth() + 1).toString().padStart(2, '0')}/${inst.dueDate.getFullYear()}`;
-      return instMonthYear === targetMonthYear;
+    const parcelas = aluno.carne?.parcelas || [];
+    const monthNum = monthMap[monthName];
+    return parcelas.find(p => {
+      if (!p.Vencimento) return false;
+      const dataVencimento = new Date(p.Vencimento);
+      const m = (dataVencimento.getUTCMonth() + 1).toString().padStart(2, '0');
+      const y = dataVencimento.getUTCFullYear().toString();
+      return m === monthNum && y === yearStr;
     });
   };
 
   const getInstallmentStatus = (aluno, inst) => {
     if (!inst) return 'A Vencer';
-    const savedStatus = aluno.HistoricoPagamentos?.[inst.number] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
+    const numero = inst.NumeroParcela || inst.number;
+    const savedStatus = aluno.HistoricoPagamentos?.[numero] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${numero}`);
     if (savedStatus) return savedStatus;
-    const monthNum = Number(monthMap[selectedMonth] || '06');
-    const yearNum = Number(selectedYear);
-    const instMonth = inst.dueDate.getMonth() + 1;
-    const instYear = inst.dueDate.getFullYear();
-    const isPastSelectedPeriod = instYear < yearNum || (instYear === yearNum && instMonth < monthNum);
-    if (isPastSelectedPeriod) return 'Atrasado';
-    const today = new Date();
-    if (instYear === yearNum && instMonth === monthNum) {
-      if (today > inst.dueDate) return 'Atrasado';
-      return 'Pendente';
-    }
-    return 'A Vencer';
+
+    return inst.StatusPagamento || 'Pendente';
   };
 
   const hasOverdueInstallmentsBefore = (aluno, currentInst) => {
-    if (!currentInst) return false;
-    const installments = getStudentInstallments(aluno);
-    return installments.some(inst => {
-      if (inst.dueDate >= currentInst.dueDate) return false;
-      const status = getInstallmentStatus(aluno, inst);
-      return status === 'Atrasado';
+    if (!currentInst || !currentInst.Vencimento) return false;
+    const parcelas = aluno.carne?.parcelas || [];
+    const currentDueDate = new Date(currentInst.Vencimento);
+    return parcelas.some(inst => {
+      if (!inst.Vencimento) return false;
+      const instDueDate = new Date(inst.Vencimento);
+      if (instDueDate >= currentDueDate) return false;
+      // Qualquer parcela anterior que NÃO esteja 'Pago' bloqueia o mês atual
+      return inst.StatusPagamento !== 'Pago';
     });
   };
 
@@ -200,11 +212,8 @@ function Financeiro() {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
       try {
-        const currentHist = aluno.HistoricoPagamentos || {};
-        const novoHistorico = { ...currentHist, [inst.number]: 'Pago' };
-        await alunoService.atualizarAluno(aluno.documentId || aluno.id, { HistoricoPagamentos: novoHistorico });
-        aluno.HistoricoPagamentos = novoHistorico;
-        setUpdateTrigger(prev => prev + 1);
+        await financeiroService.pagarParcela(inst.documentId);
+        await carregarAlunos();
       } catch (err) {
         console.error('Error marking payment as paid on backend:', err);
         alert('Não foi possível registrar o pagamento no servidor.');
@@ -216,11 +225,8 @@ function Financeiro() {
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     if (inst) {
       try {
-        const currentHist = aluno.HistoricoPagamentos || {};
-        const novoHistorico = { ...currentHist, [inst.number]: 'Pendente' };
-        await alunoService.atualizarAluno(aluno.documentId || aluno.id, { HistoricoPagamentos: novoHistorico });
-        aluno.HistoricoPagamentos = novoHistorico;
-        setUpdateTrigger(prev => prev + 1);
+        await financeiroService.desmarcarPagamento(inst.documentId);
+        await carregarAlunos();
       } catch (err) {
         console.error('Error unmarking payment on backend:', err);
         alert('Não foi possível alterar o status de pagamento no servidor.');
@@ -248,7 +254,7 @@ function Financeiro() {
     const name = aluno.NomeCrianca || '';
     const serie = aluno.SerieCursada || '';
     return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           serie.toLowerCase().includes(searchQuery.toLowerCase());
+      serie.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const activeInstallmentsList = alunos.filter(aluno => {
@@ -257,7 +263,7 @@ function Financeiro() {
     const name = aluno.NomeCrianca || '';
     const serie = aluno.SerieCursada || '';
     const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          serie.toLowerCase().includes(searchQuery.toLowerCase());
+      serie.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
     const inst = getInstallmentForPeriod(aluno, selectedMonth, selectedYear);
     return inst !== undefined;
@@ -267,21 +273,23 @@ function Financeiro() {
     let totalReceived = 0;
     let totalToReceive = 0;
     let totalOverdue = 0;
+    const monthNum = Number(monthMap[selectedMonth] || '06');
+    const yearNum = Number(selectedYear);
     alunos.forEach(aluno => {
       const createdYear = new Date(aluno.createdAt || '2026-01-01').getFullYear();
       if (createdYear > Number(selectedYear)) return;
-      const installments = getStudentInstallments(aluno);
-      const monthNum = Number(monthMap[selectedMonth] || '06');
-      const yearNum = Number(selectedYear);
-      installments.forEach(inst => {
-        const instMonth = inst.dueDate.getMonth() + 1;
-        const instYear = inst.dueDate.getFullYear();
+      const parcelas = aluno.carne?.parcelas || [];
+      parcelas.forEach(parcela => {
+        if (!parcela.Vencimento) return;
+        const dueDate = new Date(parcela.Vencimento);
+        const instMonth = dueDate.getUTCMonth() + 1;
+        const instYear = dueDate.getUTCFullYear();
         const isBeforeOrEqual = instYear < yearNum || (instYear === yearNum && instMonth <= monthNum);
         if (!isBeforeOrEqual) return;
-        const value = aluno.ValorMensalidade || 350.00;
-        const status = getInstallmentStatus(aluno, inst);
+        const value = parcela.Valor || aluno.ValorMensalidade || 350.00;
+        const status = parcela.StatusPagamento || 'Pendente';
         if (status === 'Pago') totalReceived += value;
-        else if (status === 'Atrasado') totalOverdue += value;
+        else if (instYear < yearNum || (instYear === yearNum && instMonth < monthNum)) totalOverdue += value;
         else if (instYear === yearNum && instMonth === monthNum) totalToReceive += value;
       });
     });
@@ -461,7 +469,7 @@ function Financeiro() {
                           const valor = aluno.ValorMensalidade || 350.00;
                           return (
                             <tr key={aluno.id}>
-                              <td><span style={{ fontWeight: status === 'Atrasado' ? '700' : '500', color: status === 'Atrasado' ? 'var(--error)' : 'inherit' }}>{inst ? inst.dueDateStr : 'N/A'}</span></td>
+                              <td><span style={{ fontWeight: status === 'Atrasado' ? '700' : '500', color: status === 'Atrasado' ? 'var(--error)' : 'inherit' }}>{inst ? formatarData(inst.Vencimento) : 'N/A'}</span></td>
                               <td><span className="responsible-name">{aluno.NomeCrianca}</span></td>
                               <td><span style={{ fontWeight: '600' }}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></td>
                               <td><span className={`status-badge ${status.toLowerCase().replace(' ', '-')}`}>{status.toUpperCase()}</span></td>

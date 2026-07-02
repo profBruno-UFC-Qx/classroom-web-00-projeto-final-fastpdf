@@ -54,19 +54,19 @@ export default {
     const valorMensalidade = result.ValorMensalidade || 0;
     const matricula = result.Matricula || '0000';
     try {
-      // 1. Cria o registro de "Carne" usando o Document Service (Strapi v5)
+      // 1. Cria o registro de "Carne" já publicado (status: 'published')
       const novoCarne = await strapi.documents('api::carne.carne').create({
         data: {
           Codigo: `CARNE-${matricula}-${new Date().getFullYear()}`,
           Ano: new Date().getFullYear(),
-          aluno: result.id,
-          // Nota: No Strapi v5, o status 'published' pode ser definido direto, mas o padrão de rascunho/publicação é controlado de outra forma, geralmente publicando automaticamente por padrão ou via status.
-        }
+          aluno: result.documentId,
+        },
+        status: 'published',
       });
 
-      const parcelasCriadasIds = [];
+      const parcelasCriadasIds: any[] = [];
 
-      // 2. Cria as 12 parcelas
+      // 2. Cria as 12 parcelas já publicadas
       for (let i = 1; i <= 12; i++) {
         const dataVencimento = new Date();
         dataVencimento.setMonth(dataVencimento.getMonth() + i);
@@ -77,21 +77,22 @@ export default {
             Vencimento: dataVencimento,
             Valor: valorMensalidade,
             StatusPagamento: 'Pendente',
-          }
+          },
+          status: 'published',
         });
-        // IMPORTANTE: No Strapi v5, preferimos guardar o 'documentId'
         parcelasCriadasIds.push(novaParcela.documentId || novaParcela.id);
       }
 
-      // 3. Atualiza o Carnê vinculando as parcelas usando o documentId
+      // 3. Atualiza o Carnê vinculando as parcelas (mantém publicado)
       await strapi.documents('api::carne.carne').update({
         documentId: novoCarne.documentId,
         data: {
-          parcelas: parcelasCriadasIds
-        }
+          parcelas: parcelasCriadasIds,
+        },
+        status: 'published',
       });
 
-      console.log(`Sucesso: Carnê e 12 parcelas vinculados para o aluno ID ${result.id}`);
+      console.log(`Sucesso: Carnê e 12 parcelas PUBLICADOS para o aluno documentId ${result.documentId}`);
     } catch (error) {
       console.error('Falha ao gerar carnê/parcelas automática no ciclo de vida:', error);
     }

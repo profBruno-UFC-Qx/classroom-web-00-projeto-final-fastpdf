@@ -138,6 +138,17 @@ async listarSecretarias(escolaId) {
 
   async criarResponsavel(username, email, password, escolaId) {
     try {
+      // 1. Verifica se já existe um usuário com este email
+      const searchResponse = await api.get(`/users?filters[email][$eq]=${encodeURIComponent(email)}`);
+      const existingUsers = searchResponse.data;
+
+      if (existingUsers && existingUsers.length > 0) {
+        // Usuário já existe, retorna o existente sem erro
+        console.log(`Responsável com email ${email} já existe, reutilizando.`);
+        return existingUsers[0];
+      }
+
+      // 2. Cria o novo usuário
       const response = await api.post('/users', {
         username,
         email,
@@ -149,8 +160,8 @@ async listarSecretarias(escolaId) {
 
       const novoUserId = response.data.id;
 
-      // 2. Atualiza com a escola separadamente
-      const putResponse = await api.put(`/users/${novoUserId}`, {
+      // 3. Atualiza com a escola separadamente
+      await api.put(`/users/${novoUserId}`, {
         escola: Number(escolaId)
       });
       
