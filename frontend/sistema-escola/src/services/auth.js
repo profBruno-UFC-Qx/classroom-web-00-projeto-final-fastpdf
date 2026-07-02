@@ -138,15 +138,22 @@ async listarSecretarias(escolaId) {
 
   async criarResponsavel(username, email, password, escolaId) {
     try {
-      const response = await axios.post('http://localhost:1337/api/auth/local/register', {
+      const response = await api.post('/users', {
         username,
         email,
         password,
-        escola: escolaId,
         cargo: 'responsavel',
-      }, {
-        headers: { 'Content-Type': 'application/json' }
+        confirmed: true,
+        role: 1
       });
+
+      const novoUserId = response.data.id;
+
+      // 2. Atualiza com a escola separadamente
+      const putResponse = await api.put(`/users/${novoUserId}`, {
+        escola: Number(escolaId)
+      });
+      
       return response.data;
     } catch (error) {
       console.error('Error creating responsible user:', error);

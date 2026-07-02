@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  DollarSign, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Plus, 
-  Bell, 
-  HelpCircle, 
-  Menu, 
-  X, 
-  CheckCircle, 
-  Clock, 
+import {
+  LayoutDashboard,
+  Users,
+  DollarSign,
+  Settings,
+  LogOut,
+  Search,
+  Plus,
+  Bell,
+  HelpCircle,
+  Menu,
+  X,
+  CheckCircle,
+  Clock,
   AlertTriangle,
   FileText,
   Calendar,
@@ -136,36 +136,24 @@ function Dashboard() {
   };
 
   const getInstallmentForPeriod = (aluno, monthName, yearStr) => {
-    const list = getStudentInstallments(aluno);
-    const monthNum = monthMap[monthName] || '06';
-    const targetMonthYear = `${monthNum}/${yearStr}`;
-    return list.find(inst => {
-      const instMonthYear = `${(inst.dueDate.getMonth() + 1).toString().padStart(2, '0')}/${inst.dueDate.getFullYear()}`;
-      return instMonthYear === targetMonthYear;
+    const parcelas = aluno.carne?.parcelas || [];
+    const monthNum = monthMap[monthName];
+    return parcelas.find(p => {
+      if (!p.Vencimento) return false;
+      const dataVencimento = new Date(p.Vencimento);
+      const m = (dataVencimento.getMonth() + 1).toString().padStart(2, '0');
+      const y = dataVencimento.getFullYear().toString();
+      return m === monthNum && y === yearStr;
     });
   };
 
   const getInstallmentStatus = (aluno, inst) => {
-    if (!inst) return 'A Vencer';
-
-    const savedStatus = aluno.HistoricoPagamentos?.[String(inst.number)] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${inst.number}`);
+    if (!inst) return 'A Vencer'; // Segurança contra undefined
+    // Verifica primeiro se há um override local ou no histórico legado
+    const numero = inst.NumeroParcela || inst.number;
+    const savedStatus = aluno.HistoricoPagamentos?.[String(numero)] || localStorage.getItem(`financeiro_status_${aluno.id}_inst_${numero}`);
     if (savedStatus) return savedStatus;
-
-    const monthNum = monthNames.indexOf(selectedMonth) + 1;
-    const yearNum = Number(selectedYear);
-    const instMonth = inst.dueDate.getMonth() + 1;
-    const instYear = inst.dueDate.getFullYear();
-
-    const isPastSelectedPeriod = instYear < yearNum || (instYear === yearNum && instMonth < monthNum);
-    if (isPastSelectedPeriod) return 'Atrasado';
-
-    const today = new Date();
-    if (instYear === yearNum && instMonth === monthNum) {
-      if (today > inst.dueDate) return 'Atrasado';
-      return 'Pendente';
-    }
-
-    return 'A Vencer';
+    return inst.StatusPagamento || 'Pendente';
   };
 
   const activeAlunos = alunos.filter(aluno => {
@@ -180,15 +168,18 @@ function Dashboard() {
   let overdueCount = 0;
 
   activeAlunos.forEach(aluno => {
-    const installments = getStudentInstallments(aluno);
-    installments.forEach(inst => {
+    const parcelas = aluno.carne?.parcelas || [];
+    parcelas.forEach(inst => {
       const status = getInstallmentStatus(aluno, inst);
-      const instMonth = inst.dueDate.getMonth();
-      const instYear = inst.dueDate.getFullYear();
+      if (!inst.Vencimento) return;
+
+      const dataVencimento = new Date(inst.Vencimento);
+      const instMonth = dataVencimento.getMonth();
+      const instYear = dataVencimento.getFullYear();
+
       const targetMonthIndex = monthNames.indexOf(selectedMonth);
       const targetYearNum = Number(selectedYear);
       const isCurrentMonth = instMonth === targetMonthIndex && instYear === targetYearNum;
-
       if (status === 'Pago' && isCurrentMonth) {
         paidCount++;
       } else if (status === 'Atrasado') {
@@ -213,8 +204,8 @@ function Dashboard() {
       alunos.forEach(aluno => {
         const inst = getInstallmentForPeriod(aluno, mName, yStr);
         if (!inst) return;
-        const savedStatus = aluno.HistoricoPagamentos?.[String(inst.number)];
-        if (savedStatus === 'Pago') {
+        const status = getInstallmentStatus(aluno, inst);
+        if (status === 'Pago') {
           monthTotal += (aluno.ValorMensalidade || 0);
         }
       });
@@ -235,7 +226,7 @@ function Dashboard() {
     return { x, y, ...d };
   });
 
-  const linePath = `M ${points[0].x} ${points[0].y} ` + 
+  const linePath = `M ${points[0].x} ${points[0].y} ` +
     points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
 
   const areaPath = `${linePath} L ${points[5].x} 230 L ${points[0].x} 230 Z`;
@@ -248,7 +239,7 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       {isSidebarOpen && (
-        <div 
+        <div
           style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.4)', zIndex: 99 }}
           onClick={() => setIsSidebarOpen(false)}
         />

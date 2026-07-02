@@ -4,7 +4,7 @@ export const alunoService = {
  
   async obterAlunos() {
     try {
-      const response = await api.get('/alunos?populate=*');
+      const response = await api.get('/alunos?populate[escola]=true&populate[carne][populate]=parcelas');
       // Strapi returns an array of objects inside response.data.data
       return response.data?.data || [];
     } catch (error) {
